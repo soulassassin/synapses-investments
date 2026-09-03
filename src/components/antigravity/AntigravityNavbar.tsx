@@ -28,11 +28,11 @@ export function AntigravityNavbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full bg-black/75 hover:bg-black/85 backdrop-blur-2xl border-b border-white/10 hover:border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-300">
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-8">
-        {/* Brand Header: Clean, Unboxed Synapses Logo (No Box / No Border) */}
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between h-20 px-6 sm:px-10">
+        {/* Brand Header: Clean, Unboxed Synapses Logo with Generous Padding */}
         <Link
           href="/"
-          className="flex items-center h-full py-2 select-none hover:opacity-90 active:scale-95 transition-all"
+          className="flex items-center py-3 px-4 sm:px-6 mr-3 select-none hover:opacity-90 active:scale-95 transition-all shrink-0"
           title="Synapses Investments Home"
         >
           <SynapsesLogo theme="white" size="md" />
@@ -73,12 +73,12 @@ export function AntigravityNavbar() {
         </nav>
 
         {/* Right Actions: App Drawer + Login Button */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           {/* App Drawer Launcher */}
           <div className="relative flex items-center">
             <button
               onClick={() => setIsAppDrawerOpen((prev) => !prev)}
-              className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/30 text-zinc-300 hover:text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 flex items-center justify-center cursor-pointer"
+              className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/30 text-zinc-300 hover:text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 flex items-center justify-center cursor-pointer"
               title="Synapses Ecosystem"
             >
               <Grid className="w-4 h-4" />
@@ -123,7 +123,7 @@ export function AntigravityNavbar() {
 
           {/* Unified "Login" Button */}
           <Link href="/login" className="flex items-center group">
-            <button className="py-2 px-5 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
+            <button className="py-2.5 px-6 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
               <span>Login</span>
               <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform duration-200" />
             </button>
