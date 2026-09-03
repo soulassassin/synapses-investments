@@ -17,17 +17,17 @@ export function SynapsesLogo({
 }: SynapsesLogoProps) {
   const isWhite = theme === "white";
 
-  // Precision crisp size scale for trimmed logo
+  // Precision crisp size scale for v2 high-resolution logo
   const sizeStyles = {
-    sm: { height: 30 },
-    md: { height: 42 },
-    lg: { height: 52 },
-    xl: { height: 72 },
-    hero: { height: 96 },
+    sm: { height: 32 },
+    md: { height: 44 },
+    lg: { height: 56 },
+    xl: { height: 76 },
+    hero: { height: 104 },
   };
 
   const currentSize = sizeStyles[size] || sizeStyles.md;
-  const logoSrc = isWhite ? "/synapses-logo-white-trimmed.png" : "/logo-black.svg";
+  const logoSrc = isWhite ? "/synapses-logo-v2.png" : "/logo-black.svg";
 
   return (
     <div className={clsx("inline-flex items-center justify-center select-none shrink-0", className)}>
