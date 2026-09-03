@@ -188,3 +188,14 @@ h1, h2, h3, h4, [id] {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+
+/* Institutional Typography: Quantum Letter & Word Spacing Utilities */
+.tracking-quantum {
+  letter-spacing: 0.14em;
+  word-spacing: 0.2em;
+}
+
+.tracking-wide-quantum {
+  letter-spacing: 0.18em;
+  word-spacing: 0.28em;
+}
