@@ -31,11 +31,13 @@ export function AntigravityNavbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-3 px-4 pointer-events-none">
       <div className="w-full max-w-6xl flex items-center justify-between pointer-events-auto h-16">
-        {/* Brand Header with Big Official Synapses Investments Logo (Flush, In-Line) */}
-        <Link href="/" className="flex items-center h-full">
-          <GlassCard className="px-5 h-full flex items-center justify-center bg-black/85 backdrop-blur-2xl border-white/15 hover:border-white/35 transition-all shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
-            <SynapsesLogo theme="white" size="md" />
-          </GlassCard>
+        {/* Brand Header: Clean, Unboxed Synapses Investments Logo (No Box / No Border) */}
+        <Link
+          href="/"
+          className="flex items-center h-full px-2 py-1 transition-transform hover:scale-[1.02] active:scale-95 select-none"
+          title="Synapses Investments Home"
+        >
+          <SynapsesLogo theme="white" size="md" />
         </Link>
 
         {/* Center Nav Links (Flush, In-Line) */}

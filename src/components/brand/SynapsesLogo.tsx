@@ -17,17 +17,17 @@ export function SynapsesLogo({
 }: SynapsesLogoProps) {
   const isWhite = theme === "white";
 
-  // Generous, crisp size scale
+  // Precision crisp size scale for trimmed logo
   const sizeStyles = {
-    sm: { height: 38 },
-    md: { height: 50 },
-    lg: { height: 60 },
-    xl: { height: 86 },
-    hero: { height: 116 },
+    sm: { height: 30 },
+    md: { height: 42 },
+    lg: { height: 52 },
+    xl: { height: 72 },
+    hero: { height: 96 },
   };
 
   const currentSize = sizeStyles[size] || sizeStyles.md;
-  const logoSrc = isWhite ? LOGO_WHITE_BASE64 : LOGO_BLACK_BASE64;
+  const logoSrc = isWhite ? "/synapses-logo-white-trimmed.png" : "/logo-black.svg";
 
   return (
     <div className={clsx("inline-flex items-center justify-center select-none shrink-0", className)}>
@@ -40,7 +40,7 @@ export function SynapsesLogo({
           maxWidth: "100%",
           objectFit: "contain",
         }}
-        className="transition-all duration-200 block drop-shadow-md"
+        className="transition-opacity duration-200 block drop-shadow-[0_2px_12px_rgba(255,255,255,0.15)] hover:opacity-90"
         loading="eager"
       />
     </div>
