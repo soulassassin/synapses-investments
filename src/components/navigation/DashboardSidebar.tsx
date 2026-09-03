@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Shield,
   ArrowUpRight,
+  X,
 } from "lucide-react";
 import { useTrades } from "@/context/TradeContext";
 import { SynapsesLogo } from "../brand/SynapsesLogo";
@@ -22,9 +23,16 @@ import { SynapsesLogo } from "../brand/SynapsesLogo";
 interface DashboardSidebarProps {
   onOpenTradeModal: () => void;
   onOpenSyncModal: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  onOpenTradeModal,
+  onOpenSyncModal,
+  isOpen = false,
+  onClose,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const { brokerAccounts, selectedAccount, setSelectedAccount } = useTrades();
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
@@ -64,13 +72,22 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
 
   const currentAcc = brokerAccounts.find((a) => a.name === selectedAccount) || brokerAccounts[0];
 
-  return (
-    <aside className="w-64 lg:w-72 shrink-0 border-r border-white/10 bg-black/90 backdrop-blur-2xl flex flex-col h-screen sticky top-0 z-30 select-none">
+  const renderContent = (isMobile: boolean) => (
+    <>
       {/* Brand Header with Synapses Investments Logo */}
-      <div className="p-5 border-b border-white/10 flex items-center justify-between">
-        <Link href="/" className="group">
+      <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
+        <Link href="/" onClick={() => isMobile && onClose?.()} className="group">
           <SynapsesLogo theme="white" size="md" />
         </Link>
+        {isMobile && (
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Close terminal sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Account Selector Widget */}
@@ -103,7 +120,7 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
                 className="fixed inset-0 z-30"
                 onClick={() => setIsAccountDropdownOpen(false)}
               />
-              <div className="absolute top-full left-0 right-0 mt-2 p-1.5 rounded-xl bg-brand-900/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-40 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute top-full left-0 right-0 mt-2 p-1.5 rounded-xl bg-zinc-950/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-40 animate-in fade-in zoom-in-95 duration-150">
                 <button
                   onClick={() => {
                     setSelectedAccount("ALL");
@@ -149,7 +166,10 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
 
         {/* Quick Log Trade CTA */}
         <button
-          onClick={onOpenTradeModal}
+          onClick={() => {
+            if (isMobile) onClose?.();
+            onOpenTradeModal();
+          }}
           className="w-full mt-3 synapses-pill-btn py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200"
         >
           <PlusCircle className="w-4 h-4 text-black" />
@@ -171,6 +191,7 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => isMobile && onClose?.()}
               className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 group ${
                 isActive
                   ? "bg-white/[0.08] text-white border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.06)] font-bold"
@@ -200,7 +221,10 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
 
         {/* Broker Sync Modal Trigger */}
         <button
-          onClick={onOpenSyncModal}
+          onClick={() => {
+            if (isMobile) onClose?.();
+            onOpenSyncModal();
+          }}
           className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5 transition-all group cursor-pointer"
         >
           <div className="flex items-center gap-3">
@@ -215,6 +239,7 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
         {/* Return to Synapses Quantum Canvas */}
         <Link
           href="/"
+          onClick={() => isMobile && onClose?.()}
           className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5 transition-all group cursor-pointer"
         >
           <div className="flex items-center gap-3">
@@ -235,6 +260,28 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
           Synapses Investments • Live
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-white/10 bg-black/90 backdrop-blur-2xl h-screen sticky top-0 z-30 select-none">
+        {renderContent(false)}
+      </aside>
+
+      {/* Mobile Slide-Over Drawer Overlay */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
+            onClick={onClose}
+          />
+          <aside className="relative z-10 w-72 max-w-[85vw] bg-black/95 backdrop-blur-3xl border-r border-white/15 flex flex-col h-full shadow-[0_20px_60px_rgba(0,0,0,0.95)] animate-in slide-in-from-left duration-200">
+            {renderContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

@@ -9,7 +9,7 @@ export function GravityController() {
   const { isZeroG, gravityMode, setGravityMode, triggerImpulse } = useGravity();
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 hidden sm:block">
       <GlassCard className="p-2 sm:p-2.5 bg-black/90 backdrop-blur-2xl border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3">
         {/* Gravity State Indicator */}
         <div className="flex items-center gap-2 pl-2 pr-1">

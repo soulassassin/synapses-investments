@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { DraggableNode } from "./DraggableNode";
 import { NeonLogo } from "./NeonLogo";
 import { SearchBar } from "./SearchBar";
@@ -25,6 +26,81 @@ export function FloatingCanvas() {
         <NeonLogo />
         <div className="w-full mt-7">
           <SearchBar />
+        </div>
+
+        {/* Mobile & Tablet Quick Launcher Grid (< lg) */}
+        <div className="lg:hidden w-full max-w-xl mx-auto mt-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5 z-20">
+          <Link
+            href="/dashboard/journal"
+            className="p-3.5 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/15 hover:border-white/35 flex items-center justify-between transition-all active:scale-98 shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/[0.08] border border-white/10 text-white">
+                <Brain className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block tracking-wider">Trade Journal</span>
+                <span className="text-[10px] font-mono text-zinc-400 block">ICT & SMC Visual Logger</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
+              ALPHA
+            </span>
+          </Link>
+
+          <Link
+            href="/dashboard/calculator"
+            className="p-3.5 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/15 hover:border-white/35 flex items-center justify-between transition-all active:scale-98 shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/[0.08] border border-white/10 text-white">
+                <Cpu className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block tracking-wider">Risk Calculator</span>
+                <span className="text-[10px] font-mono text-zinc-400 block">Lot Sizing & Guardrails</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
+              GUARD
+            </span>
+          </Link>
+
+          <Link
+            href="/dashboard/backtesting"
+            className="p-3.5 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/15 hover:border-white/35 flex items-center justify-between transition-all active:scale-98 shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/[0.08] border border-white/10 text-white">
+                <Terminal className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block tracking-wider">Market Replay</span>
+                <span className="text-[10px] font-mono text-zinc-400 block">Bar-by-Bar Simulator</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
+              10x
+            </span>
+          </Link>
+
+          <Link
+            href="/blog"
+            className="p-3.5 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/15 hover:border-white/35 flex items-center justify-between transition-all active:scale-98 shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/[0.08] border border-white/10 text-white">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block tracking-wider">Intelligence</span>
+                <span className="text-[10px] font-mono text-zinc-400 block">Research & Education</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              INTEL
+            </span>
+          </Link>
         </div>
       </div>
 
