@@ -1,19 +1,27 @@
-"use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
+import React from "react";
+import type { Metadata } from "next";
 import { FeatureLayout } from "@/components/marketing/FeatureLayout";
+import { MiniPositionSizer } from "@/components/marketing/MiniPositionSizer";
 import {
   Calculator,
   ShieldCheck,
   Percent,
-  DollarSign,
-  AlertCircle,
-  CheckCircle2,
   Lock,
-  Zap,
-  ArrowRight,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Dynamic Risk & Lot Calculator | Prop Firm Capital Protection",
+  description:
+    "Pre-trade position sizing calculator engineered for prop firm evaluations and live accounts. Calculate exact contract sizing for NAS100, US30, and Gold.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/features/risk-calculator",
+  },
+  openGraph: {
+    title: "Dynamic Risk & Lot Calculator | Synapses Investments",
+    description: "Capital preservation, exact tick-value lot sizing, and drawdown guardrails.",
+    url: "https://synapses-investments.vercel.app/features/risk-calculator",
+  },
+};
 
 export default function RiskCalculatorFeaturePage() {
   const stats = [
@@ -46,14 +54,6 @@ export default function RiskCalculatorFeaturePage() {
     },
   ];
 
-  // Mini interactive demo on this landing page
-  const [balance, setBalance] = useState(100000);
-  const [riskPct, setRiskPct] = useState(1.0);
-  const [stopPts, setStopPts] = useState(25);
-
-  const dollarRisk = (balance * riskPct) / 100;
-  const calculatedLots = stopPts > 0 ? Number((dollarRisk / (stopPts * 20)).toFixed(2)) : 0;
-
   return (
     <FeatureLayout
       badge="Dynamic Capital Guardrails"
@@ -65,74 +65,7 @@ export default function RiskCalculatorFeaturePage() {
       stats={stats}
     >
       {/* Interactive Sizing Engine Preview */}
-      <section className="p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.9)] space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-              INTERACTIVE POSITION SIZER PREVIEW (NAS100)
-            </span>
-          </div>
-          <span className="text-[11px] font-mono text-zinc-400">
-            Formula: Dollar Risk ÷ (Stop Pts × Instrument Point Value)
-          </span>
-        </div>
-
-        {/* Live Interactive Mini Widget */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">ACCOUNT BALANCE ($)</label>
-            <input
-              type="number"
-              value={balance}
-              onChange={(e) => setBalance(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 rounded-xl bg-black border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-white/50"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">RISK PERCENTAGE (%)</label>
-            <input
-              type="number"
-              step="0.1"
-              value={riskPct}
-              onChange={(e) => setRiskPct(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 rounded-xl bg-black border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-white/50"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">STOP LOSS DISTANCE (PTS)</label>
-            <input
-              type="number"
-              value={stopPts}
-              onChange={(e) => setStopPts(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 rounded-xl bg-black border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-white/50"
-            />
-          </div>
-        </div>
-
-        {/* Results Banner */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
-          <div>
-            <span className="text-[10px] text-zinc-400 uppercase block">MAX ALLOWABLE DOLLAR RISK</span>
-            <span className="text-xl font-bold text-red-400">${dollarRisk.toLocaleString()}</span>
-          </div>
-          <div className="text-right sm:text-right">
-            <span className="text-[10px] text-zinc-400 uppercase block">RECOMMENDED CONTRACTS (LOTS)</span>
-            <span className="text-2xl font-black text-emerald-400">{calculatedLots} Contracts</span>
-          </div>
-        </div>
-
-        <div className="pt-2 text-center">
-          <Link href="/dashboard/calculator">
-            <button className="text-xs font-mono font-bold text-white hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5">
-              <span>Open full risk calculator with prop firm guardrails</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </Link>
-        </div>
-      </section>
+      <MiniPositionSizer />
 
       {/* Feature Pillars Grid */}
       <section className="space-y-6">

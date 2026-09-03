@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AntigravityNavbar } from "@/components/antigravity/AntigravityNavbar";
 import {
@@ -18,6 +17,21 @@ import {
   Activity,
   Compass,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "About Us & Institutional Philosophy",
+  description:
+    "Learn about the engineering thesis behind Synapses Investments: algorithmic liquidity delivery, Inner Circle Trader (ICT) concepts, and zero-G risk boundaries.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/about",
+  },
+  openGraph: {
+    title: "About Synapses Investments | Institutional Engineering & Thesis",
+    description:
+      "The market is not random; it operates on algorithmic delivery and institutional liquidity pools.",
+    url: "https://synapses-investments.vercel.app/about",
+  },
+};
 
 export default function AboutPage() {
   const stats = [

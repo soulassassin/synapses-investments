@@ -31,10 +31,10 @@ export function AntigravityNavbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-3 px-4 pointer-events-none">
       <div className="w-full max-w-6xl flex items-center justify-between pointer-events-auto h-16">
-        {/* Brand Header: Clean, Unboxed Synapses Investments Logo (No Box / No Border) */}
+        {/* Brand Header: Logo with Glassmorphic Backdrop Shield & Hover Effect */}
         <Link
           href="/"
-          className="flex items-center h-full px-2 py-1 transition-transform hover:scale-[1.02] active:scale-95 select-none"
+          className="flex items-center h-full px-3.5 py-1.5 rounded-2xl bg-black/60 hover:bg-black/85 backdrop-blur-xl border border-white/10 hover:border-white/25 shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.08)] transition-all duration-200 hover:scale-[1.02] active:scale-95 select-none"
           title="Synapses Investments Home"
         >
           <SynapsesLogo theme="white" size="md" />
@@ -76,7 +76,7 @@ export function AntigravityNavbar() {
           </GlassCard>
         </div>
 
-        {/* Right Actions: App Drawer + SN Journal Button (Flush, In-Line) */}
+        {/* Right Actions: App Drawer + Login Button (Flush, In-Line) */}
         <div className="flex items-center gap-2.5 h-full">
           {/* App Drawer Launcher */}
           <div className="relative h-full flex items-center">
@@ -125,10 +125,10 @@ export function AntigravityNavbar() {
             )}
           </div>
 
-          {/* Unified "SN Journal" Button (Exact Height Match) */}
+          {/* Unified "Login" Button (Cleaned Up Styling & Exact Height Match) */}
           <Link href="/login" className="h-full flex items-center group">
             <button className="h-full px-6 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
-              <span>SN Journal</span>
+              <span>Login</span>
               <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-0.5 transition-transform duration-200" />
             </button>
           </Link>

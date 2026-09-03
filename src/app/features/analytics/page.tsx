@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureLayout } from "@/components/marketing/FeatureLayout";
 import {
@@ -15,6 +14,20 @@ import {
   Flame,
   ShieldAlert,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Deep-Dive Performance Analytics & Expectancy Engine",
+  description:
+    "Institutional statistical breakdown: R-multiple distributions, session expectancy, Sharpe ratios, win streaks, and automated behavioral leak quantification.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/features/analytics",
+  },
+  openGraph: {
+    title: "Deep-Dive Performance Analytics | Synapses Investments",
+    description: "Statistical alpha, R-multiple expectancy, and psychological trade leakage audits.",
+    url: "https://synapses-investments.vercel.app/features/analytics",
+  },
+};
 
 export default function AnalyticsFeaturePage() {
   const stats = [

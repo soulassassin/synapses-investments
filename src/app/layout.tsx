@@ -4,8 +4,137 @@ import { TradeProvider } from "@/context/TradeContext";
 import { GravityProvider } from "@/context/GravityContext";
 
 export const metadata: Metadata = {
-  title: "Synapses Investments • Institutional Trading Terminal & Quantum Canvas",
-  description: "Next-generation institutional trading terminal, zero-G physics engine, and Synapses Journal analytics terminal by Synapses Investments.",
+  metadataBase: new URL("https://synapses-investments.vercel.app"),
+  title: {
+    default: "Synapses Investments | Institutional Trading Terminal & ICT/SMC Journal",
+    template: "%s | Synapses Investments",
+  },
+  description:
+    "Next-generation institutional trading terminal, ICT & Smart Money Concepts trade journaling, tick replay simulation, mathematical risk models, and zero-latency DMA telemetry.",
+  keywords: [
+    "Synapses Investments",
+    "ICT trading",
+    "Smart Money Concepts",
+    "SMC trade journal",
+    "trade journal",
+    "institutional order flow",
+    "NAS100 replay simulator",
+    "prop firm risk calculator",
+    "Fair Value Gap",
+    "Order Block",
+    "Liquidity Sweep",
+    "Silver Bullet trading",
+    "trading psychology tracker",
+    "prop firm evaluation",
+    "zero-G trading terminal",
+  ],
+  authors: [{ name: "Synapses Investments Quantitative Engineering", url: "https://synapses-investments.vercel.app" }],
+  creator: "Synapses Investments",
+  publisher: "Synapses Investments",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app",
+  },
+  openGraph: {
+    title: "Synapses Investments | Institutional Trading Terminal & ICT/SMC Journal",
+    description:
+      "Institutional-grade execution analytics, ICT/SMC trade journaling, risk guardrails, and DMA telemetry engineered for serious prop operators.",
+    url: "https://synapses-investments.vercel.app",
+    siteName: "Synapses Investments",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/synapses-logo-v2.png",
+        width: 1828,
+        height: 506,
+        alt: "Synapses Investments Institutional Terminal Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Synapses Investments | Institutional Trading Terminal",
+    description:
+      "Institutional trading terminal, ICT & SMC trade journaling, dynamic position sizing, and DMA execution telemetry.",
+    images: ["/synapses-logo-v2.png"],
+    creator: "@SynapsesInvest",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  other: {
+    "geo.region": "US-NY",
+    "geo.placename": "New York",
+    "geo.position": "40.7128;-74.0060",
+    "ICBM": "40.7128, -74.0060",
+    "target-audience": "Proprietary Traders, Institutional Operators, Quantitative Analysts",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://synapses-investments.vercel.app/#organization",
+      name: "Synapses Investments",
+      url: "https://synapses-investments.vercel.app",
+      logo: "https://synapses-investments.vercel.app/synapses-logo-v2.png",
+      description:
+        "Synapses Investments builds high-frequency execution tools, mathematical risk models, and institutional telemetry for systematic operators.",
+      sameAs: [
+        "https://github.com/soulassassin/synapses-investments",
+      ],
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "New York",
+        addressRegion: "NY",
+        addressCountry: "US",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://synapses-investments.vercel.app/#website",
+      url: "https://synapses-investments.vercel.app",
+      name: "Synapses Investments",
+      publisher: {
+        "@id": "https://synapses-investments.vercel.app/#organization",
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://synapses-investments.vercel.app/dashboard?search={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://synapses-investments.vercel.app/#software",
+      name: "Synapses Journal",
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Web",
+      url: "https://synapses-investments.vercel.app/dashboard/journal",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      description:
+        "The Algorithmic Execution Black Box: mechanical feedback terminal engineered to audit ICT/SMC confluences, track behavioral psychology, and quantify statistical edge.",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -30,6 +159,12 @@ export default function RootLayout({
           {/* Subtle Technical 1px Grid */}
           <div className="absolute inset-0 bg-tech-grid opacity-20" />
         </div>
+
+        {/* Schema.org Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
 
         {/* Global Context Providers */}
         <GravityProvider>

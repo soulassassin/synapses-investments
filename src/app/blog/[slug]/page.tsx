@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AntigravityNavbar } from "@/components/antigravity/AntigravityNavbar";
@@ -27,6 +28,47 @@ export function generateStaticParams() {
   }));
 }
 
+export function generateMetadata({ params }: BlogPostPageProps): Metadata {
+  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+  if (!post) {
+    return {
+      title: "Article Not Found | Synapses Intelligence",
+    };
+  }
+
+  return {
+    title: `${post.title} | Synapses Intelligence`,
+    description: post.subtitle,
+    authors: [{ name: post.author.name }],
+    alternates: {
+      canonical: `https://synapses-investments.vercel.app/blog/${post.slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.subtitle,
+      url: `https://synapses-investments.vercel.app/blog/${post.slug}`,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: [post.author.name],
+      tags: [post.category, "ICT", "SMC", "Order Flow", "Quantitative Trading"],
+      images: [
+        {
+          url: "/synapses-logo-v2.png",
+          width: 1828,
+          height: 506,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.subtitle,
+      images: ["/synapses-logo-v2.png"],
+    },
+  };
+}
+
 export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
   const post = BLOG_POSTS.find((p) => p.slug === params.slug);
 
@@ -36,8 +78,35 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
 
   const relatedPosts = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 2);
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: post.title,
+    description: post.subtitle,
+    datePublished: post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: post.author.name,
+      jobTitle: post.author.role,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Synapses Investments",
+      logo: "https://synapses-investments.vercel.app/synapses-logo-v2.png",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://synapses-investments.vercel.app/blog/${post.slug}`,
+    },
+  };
+
   return (
     <div className="min-h-screen relative bg-black text-white selection:bg-white selection:text-black font-sans">
+      {/* Article Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <AntigravityNavbar />
 
       {/* Cybernetic Grid */}

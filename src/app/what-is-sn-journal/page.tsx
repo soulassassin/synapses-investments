@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AntigravityNavbar } from "@/components/antigravity/AntigravityNavbar";
 import {
@@ -19,6 +18,21 @@ import {
   Image as ImageIcon,
   Zap,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "What is Synapses Journal? | The Algorithmic Execution Black Box",
+  description:
+    "Discover Synapses Journal: not a passive spreadsheet, but a mechanical feedback terminal engineered to audit ICT/SMC confluences, track behavioral psychology, and eliminate emotional trading leaks.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/what-is-sn-journal",
+  },
+  openGraph: {
+    title: "What is Synapses Journal? | The Algorithmic Execution Black Box",
+    description:
+      "Audit confluences, track behavioral psychology, and eliminate emotional leakage with local encrypted storage.",
+    url: "https://synapses-investments.vercel.app/what-is-sn-journal",
+  },
+};
 
 export default function WhatIsSnJournalPage() {
   const comparisonItems = [

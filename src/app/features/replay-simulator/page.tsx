@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureLayout } from "@/components/marketing/FeatureLayout";
 import {
@@ -14,6 +13,20 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Bar Replay Simulator | Zero-Lookahead Backtesting Engine",
+  description:
+    "Replay past market sessions tick-by-tick without foresight bias. Forward test your ICT model against years of historical institutional order flow.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/features/replay-simulator",
+  },
+  openGraph: {
+    title: "Bar Replay Simulator | Synapses Investments",
+    description: "Zero-lookahead backtesting with variable speed playback and direct journal sync.",
+    url: "https://synapses-investments.vercel.app/features/replay-simulator",
+  },
+};
 
 export default function ReplaySimulatorFeaturePage() {
   const stats = [

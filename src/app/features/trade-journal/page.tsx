@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureLayout } from "@/components/marketing/FeatureLayout";
 import {
@@ -16,6 +15,20 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "ICT & SMC Trade Journal | Algorithmic Execution Logging",
+  description:
+    "Institutional-grade trade logging terminal with ICT confluence tagging (FVG, Order Block, Liquidity Sweeps), session matrices, and multi-timeframe chart galleries.",
+  alternates: {
+    canonical: "https://synapses-investments.vercel.app/features/trade-journal",
+  },
+  openGraph: {
+    title: "ICT & SMC Trade Journal | Synapses Investments",
+    description: "Audit execution precision, tag ICT confluences, and eliminate emotional trading leaks.",
+    url: "https://synapses-investments.vercel.app/features/trade-journal",
+  },
+};
 
 export default function TradeJournalFeaturePage() {
   const stats = [
