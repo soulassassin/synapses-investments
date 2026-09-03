@@ -82,14 +82,14 @@ export default function AboutPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link href="/dashboard">
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.35)] cursor-pointer">
+            <Link href="/dashboard" className="group">
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
                 <span>Enter Synapses Terminal</span>
-                <ArrowRight className="w-4 h-4 text-black" />
+                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </Link>
             <Link href="/what-is-sn-journal">
-              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer">
+              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-white/30 text-white font-semibold text-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer">
                 Read Journal Manifesto
               </button>
             </Link>
@@ -97,9 +97,9 @@ export default function AboutPage() {
         </section>
 
         {/* Telemetry Stats Grid */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 rounded-3xl bg-black/80 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 rounded-3xl bg-black/80 backdrop-blur-2xl border border-white/10 hover:border-white/20 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           {stats.map((s, idx) => (
-            <div key={idx} className="space-y-1">
+            <div key={idx} className="space-y-1 p-2 rounded-xl hover:bg-white/[0.02] transition-colors">
               <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
                 {s.label}
               </span>
@@ -152,10 +152,10 @@ export default function AboutPage() {
             {pillars.map((p, idx) => (
               <div
                 key={idx}
-                className="p-7 rounded-2xl bg-black/80 border border-white/10 hover:border-white/30 transition-all space-y-4 flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                className="p-7 rounded-2xl bg-black/80 border border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)] transition-all duration-300 space-y-4 flex flex-col justify-between group cursor-default"
               >
                 <div className="space-y-3">
-                  <div className="p-2.5 rounded-xl bg-white/[0.05] border border-white/10 w-fit group-hover:scale-110 transition-transform">
+                  <div className="p-2.5 rounded-xl bg-white/[0.05] border border-white/10 w-fit group-hover:scale-110 group-hover:border-white/25 transition-all duration-200">
                     {p.icon}
                   </div>
                   <div>

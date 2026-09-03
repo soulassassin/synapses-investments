@@ -115,22 +115,22 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
           {/* Main Article Body */}
           <article className="lg:col-span-3 space-y-6 text-zinc-300 leading-relaxed font-sans text-sm sm:text-base">
             <div
-              className="space-y-6 [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:text-white [&_h2]:tracking-tight [&_h2]:pt-6 [&_h2]:border-t [&_h2]:border-white/10 [&_h2]:uppercase [&_p]:text-zinc-300 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-zinc-300 [&_strong]:text-white"
+              className="space-y-6 [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:text-white [&_h2]:tracking-tight [&_h2]:pt-6 [&_h2]:scroll-mt-24 [&_h2]:border-t [&_h2]:border-white/10 [&_h2]:uppercase [&_p]:text-zinc-300 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-zinc-300 [&_strong]:text-white"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
 
           {/* Sticky Table of Contents Sidebar */}
-          <aside className="hidden lg:block lg:col-span-1 sticky top-28 p-5 rounded-2xl bg-zinc-950/90 border border-white/10 space-y-4">
+          <aside className="hidden lg:block lg:col-span-1 sticky top-28 p-5 rounded-2xl bg-zinc-950/90 border border-white/10 space-y-4 shadow-[0_10px_30px_rgba(0,0,0,0.7)]">
             <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider block font-bold">
               TABLE OF CONTENTS
             </span>
-            <nav className="space-y-2 text-xs font-mono">
+            <nav className="space-y-1 text-xs font-mono">
               {post.tableOfContents.map((item) => (
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="block text-zinc-400 hover:text-white transition-colors py-1 hover:translate-x-1 duration-150"
+                  className="block text-zinc-400 hover:text-white hover:bg-white/[0.05] px-2.5 py-1.5 rounded-lg transition-all duration-150 hover:translate-x-1"
                 >
                   {item.title}
                 </a>
@@ -141,10 +141,10 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
               <span className="text-[10px] font-mono text-zinc-500 block mb-2">
                 APPLY TO LIVE TRADING
               </span>
-              <Link href="/dashboard/journal">
-                <button className="w-full py-2 px-3 rounded-xl bg-white text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-zinc-200 transition-colors cursor-pointer">
+              <Link href="/dashboard/journal" className="group block">
+                <button className="w-full py-2.5 px-3 rounded-xl bg-white text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer">
                   <span>Log Execution</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </Link>
             </div>
@@ -161,10 +161,10 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
             Test and log setups from this article. Auto-track your R:R, session matrices, and mistake tags in local encrypted storage.
           </p>
           <div className="flex justify-center gap-3">
-            <Link href="/dashboard/journal">
-              <button className="px-7 py-3 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] cursor-pointer">
+            <Link href="/dashboard/journal" className="group">
+              <button className="px-7 py-3 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] cursor-pointer">
                 <span>Open Terminal Journal</span>
-                <ArrowRight className="w-4 h-4 text-black" />
+                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </Link>
           </div>

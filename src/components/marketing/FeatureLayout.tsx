@@ -78,14 +78,14 @@ export function FeatureLayout({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link href={primaryCtaHref}>
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.35)] cursor-pointer">
+            <Link href={primaryCtaHref} className="group">
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
                 <span>{primaryCtaText}</span>
-                <ArrowRight className="w-4 h-4 text-black" />
+                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </Link>
             <Link href={secondaryCtaHref}>
-              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer">
+              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-white/30 text-white font-semibold text-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer">
                 {secondaryCtaText}
               </button>
             </Link>
@@ -93,7 +93,7 @@ export function FeatureLayout({
         </section>
 
         {/* Telemetry Key Stats Strip */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 rounded-3xl bg-black/80 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 rounded-3xl bg-black/80 backdrop-blur-2xl border border-white/10 hover:border-white/20 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           {stats.map((s, idx) => (
             <div key={idx} className="space-y-1">
               <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">

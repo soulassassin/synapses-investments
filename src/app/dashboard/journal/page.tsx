@@ -113,9 +113,9 @@ export default function JournalPage() {
             setTradeToEdit(null);
             setIsLogModalOpen(true);
           }}
-          className="relative group px-6 py-3 rounded-2xl bg-white text-black font-black text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2.5 transition-all shadow-[0_0_25px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] hover:bg-zinc-100 active:scale-95 cursor-pointer shrink-0 border border-white"
+          className="relative group px-6 py-3 rounded-2xl bg-white text-black font-black text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2.5 transition-all duration-200 shadow-[0_0_25px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] hover:bg-zinc-100 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 cursor-pointer shrink-0 border border-white"
         >
-          <PlusCircle className="w-4 h-4 text-black" />
+          <PlusCircle className="w-4 h-4 text-black group-hover:rotate-90 transition-transform duration-200" />
           <span>+ LOG NEW EXECUTION</span>
         </button>
       </div>
@@ -123,7 +123,7 @@ export default function JournalPage() {
       {/* Telemetry Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* Total Trades */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/25 hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
           <div className="flex items-center justify-between text-zinc-400 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider">TOTAL TRADES</span>
             <Layers className="w-3.5 h-3.5 text-zinc-400" />
@@ -133,7 +133,7 @@ export default function JournalPage() {
         </div>
 
         {/* Win Rate */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-emerald-500/30 hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
           <div className="flex items-center justify-between text-zinc-400 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider">WIN RATE</span>
             <Percent className="w-3.5 h-3.5 text-emerald-400" />
@@ -143,7 +143,7 @@ export default function JournalPage() {
         </div>
 
         {/* Cumulative R */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/25 hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
           <div className="flex items-center justify-between text-zinc-400 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider">CUMULATIVE R</span>
             <Award className="w-3.5 h-3.5 text-white" />
@@ -155,7 +155,7 @@ export default function JournalPage() {
         </div>
 
         {/* Profit Factor */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/25 hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
           <div className="flex items-center justify-between text-zinc-400 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider">PROFIT FACTOR</span>
             <Zap className="w-3.5 h-3.5 text-white" />
@@ -167,7 +167,7 @@ export default function JournalPage() {
         </div>
 
         {/* Current Drawdown / Total P&L */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col justify-between col-span-2 sm:col-span-1">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-amber-500/30 hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between col-span-2 sm:col-span-1 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
           <div className="flex items-center justify-between text-zinc-400 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider">MAX DRAWDOWN</span>
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
@@ -288,7 +288,7 @@ export default function JournalPage() {
                 <div
                   key={trade.id}
                   onClick={() => setSelectedTrade(trade)}
-                  className="p-5 rounded-2xl bg-black/85 border border-white/10 hover:border-white/30 transition-all cursor-pointer flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_15px_45px_rgba(0,0,0,0.9)] hover:scale-[1.01]"
+                  className="p-5 rounded-2xl bg-black/85 border border-white/10 hover:border-white/30 transition-all duration-300 cursor-pointer flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.9)] hover:-translate-y-1"
                 >
                   <div>
                     {/* Top Row: Symbol, Direction, Session */}
@@ -528,14 +528,14 @@ export default function JournalPage() {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setSelectedTrade(trade)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-emerald-500/15 text-zinc-400 hover:text-emerald-400 transition-all duration-150 active:scale-90 cursor-pointer"
                             title="View Full Execution"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleEdit(trade)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-cyan-500/15 text-zinc-400 hover:text-cyan-400 transition-all duration-150 active:scale-90 cursor-pointer"
                             title="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -546,7 +546,7 @@ export default function JournalPage() {
                                 deleteTrade(trade.id);
                               }
                             }}
-                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-red-500/15 text-zinc-500 hover:text-red-400 transition-all duration-150 active:scale-90 cursor-pointer"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

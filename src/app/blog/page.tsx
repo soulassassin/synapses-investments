@@ -71,7 +71,7 @@ export default function BlogIndexPage() {
         {/* Featured Article Banner */}
         {featuredPost && (
           <Link href={`/blog/${featuredPost.slug}`} className="block group">
-            <div className="p-6 sm:p-10 rounded-3xl bg-zinc-950/90 border border-white/15 hover:border-white/35 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.95)] relative overflow-hidden group-hover:scale-[1.005]">
+            <div className="p-6 sm:p-10 rounded-3xl bg-zinc-950/90 border border-white/15 hover:border-white/35 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.95)] transition-all duration-300 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none font-mono text-9xl font-black text-white select-none">
                 01
               </div>
@@ -109,7 +109,7 @@ export default function BlogIndexPage() {
                     </div>
                   </div>
 
-                  <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+                  <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform duration-200">
                     <span>Read Article</span>
                     <ArrowRight className="w-4 h-4 text-emerald-400" />
                   </span>
@@ -125,7 +125,7 @@ export default function BlogIndexPage() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-mono whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono whitespace-nowrap transition-all duration-150 active:scale-95 cursor-pointer ${
                 activeCategory === cat
                   ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.25)]"
                   : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
@@ -140,7 +140,7 @@ export default function BlogIndexPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredPosts.map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
-              <div className="p-6 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-white/30 transition-all h-full flex flex-col justify-between space-y-4 group-hover:scale-[1.01] shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+              <div className="p-6 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_45px_rgba(0,0,0,0.8)] transition-all duration-300 h-full flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="px-2 py-0.5 rounded bg-white/[0.06] border border-white/10 text-emerald-400 font-semibold text-[11px]">

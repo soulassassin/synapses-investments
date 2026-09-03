@@ -31,15 +31,9 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
 
   const navItems = [
     {
-      name: "Terminal Overview",
-      href: "/dashboard",
-      icon: <LayoutDashboard className="w-4 h-4" />,
-      exact: true,
-    },
-    {
-      name: "Trade Journal & Playbook",
-      href: "/dashboard/journal",
-      icon: <BookOpen className="w-4 h-4" />,
+      name: "Bar Replay Simulator",
+      href: "/dashboard/backtesting",
+      icon: <History className="w-4 h-4" />,
       exact: false,
     },
     {
@@ -49,15 +43,21 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
       exact: false,
     },
     {
-      name: "Bar Replay Simulator",
-      href: "/dashboard/backtesting",
-      icon: <History className="w-4 h-4" />,
-      exact: false,
-    },
-    {
       name: "Risk & Lot Calculator",
       href: "/dashboard/calculator",
       icon: <Calculator className="w-4 h-4" />,
+      exact: false,
+    },
+    {
+      name: "Terminal Overview",
+      href: "/dashboard",
+      icon: <LayoutDashboard className="w-4 h-4" />,
+      exact: true,
+    },
+    {
+      name: "Trade Journal & Playbook",
+      href: "/dashboard/journal",
+      icon: <BookOpen className="w-4 h-4" />,
       exact: false,
     },
   ];
@@ -150,7 +150,7 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
         {/* Quick Log Trade CTA */}
         <button
           onClick={onOpenTradeModal}
-          className="w-full mt-3 synapses-pill-btn py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2"
+          className="w-full mt-3 synapses-pill-btn py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200"
         >
           <PlusCircle className="w-4 h-4 text-black" />
           <span>Log New Trade</span>
@@ -174,18 +174,18 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
               className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 group ${
                 isActive
                   ? "bg-white/[0.08] text-white border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.06)] font-bold"
-                  : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  : "text-zinc-400 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span
-                  className={`transition-colors ${
-                    isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                  className={`transition-all duration-150 ${
+                    isActive ? "text-white scale-105" : "text-zinc-400 group-hover:text-white group-hover:scale-110"
                   }`}
                 >
                   {item.icon}
                 </span>
-                <span>{item.name}</span>
+                <span className="transition-colors">{item.name}</span>
               </div>
               {isActive && (
                 <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_#FFFFFF]" />
@@ -201,13 +201,13 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
         {/* Broker Sync Modal Trigger */}
         <button
           onClick={onOpenSyncModal}
-          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all group"
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5 transition-all group cursor-pointer"
         >
           <div className="flex items-center gap-3">
-            <Zap className="w-4 h-4 text-zinc-300 group-hover:text-white" />
+            <Zap className="w-4 h-4 text-zinc-300 group-hover:text-white group-hover:scale-110 transition-all duration-150" />
             <span>Broker API Feeds</span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white group-hover:bg-white/20 transition-colors">
             MT4/5
           </span>
         </button>
@@ -215,7 +215,7 @@ export function DashboardSidebar({ onOpenTradeModal, onOpenSyncModal }: Dashboar
         {/* Return to Synapses Quantum Canvas */}
         <Link
           href="/"
-          className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all group"
+          className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5 transition-all group cursor-pointer"
         >
           <div className="flex items-center gap-3">
             <Orbit className="w-4 h-4 text-white group-hover:rotate-90 transition-transform duration-300" />

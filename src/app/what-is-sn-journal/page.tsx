@@ -138,10 +138,10 @@ export default function WhatIsSnJournalPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link href="/dashboard/journal">
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.35)] cursor-pointer">
+            <Link href="/dashboard/journal" className="group">
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
                 <span>Access Live Terminal Journal</span>
-                <ArrowRight className="w-4 h-4 text-black" />
+                <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </Link>
           </div>
@@ -162,10 +162,10 @@ export default function WhatIsSnJournalPage() {
             {deepDives.map((d, idx) => (
               <div
                 key={idx}
-                className="p-7 rounded-2xl bg-zinc-950/90 border border-white/10 hover:border-white/30 transition-all space-y-3 flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
+                className="p-7 rounded-2xl bg-zinc-950/90 border border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)] transition-all duration-300 space-y-3 flex flex-col justify-between group cursor-default"
               >
                 <div className="space-y-3">
-                  <div className="p-2.5 rounded-xl bg-white/[0.05] border border-white/10 w-fit group-hover:scale-110 transition-transform">
+                  <div className="p-2.5 rounded-xl bg-white/[0.05] border border-white/10 w-fit group-hover:scale-110 group-hover:border-white/25 transition-all duration-200">
                     {d.icon}
                   </div>
                   <div>

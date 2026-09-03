@@ -551,11 +551,12 @@ export function TradeModal({ isOpen, onClose, tradeToEdit }: TradeModalProps) {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                 {screenshots.map((src, idx) => (
                   <div key={idx} className="relative group rounded-lg overflow-hidden border border-white/10 bg-black aspect-video">
-                    <img src={src} alt={`Chart ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img src={src} alt={`Chart ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     <button
                       type="button"
                       onClick={() => handleRemoveScreenshot(idx)}
-                      className="absolute top-1 right-1 p-1 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 p-1 rounded-full bg-red-500/90 text-white opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90 transition-all duration-150 cursor-pointer shadow-lg"
+                      title="Remove image"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -570,13 +571,13 @@ export function TradeModal({ isOpen, onClose, tradeToEdit }: TradeModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-mono text-zinc-400 hover:text-white transition-colors"
+              className="px-4 py-2.5 rounded-xl text-xs font-mono text-zinc-400 hover:text-white hover:bg-white/[0.06] active:scale-95 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] cursor-pointer"
             >
               {tradeToEdit ? "Save Changes" : "Commit Execution to Journal"}
             </button>

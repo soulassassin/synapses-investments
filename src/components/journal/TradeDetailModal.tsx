@@ -81,21 +81,22 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
           <div className="flex items-center gap-2">
             <button
               onClick={() => onEdit(trade)}
-              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all duration-150 cursor-pointer"
               title="Edit Execution"
             >
               <Edit2 className="w-4 h-4" />
             </button>
             <button
               onClick={handleDelete}
-              className="p-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+              className="p-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/15 active:scale-90 transition-all duration-150 cursor-pointer"
               title="Delete Execution"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all duration-150 cursor-pointer"
+              title="Close modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -212,13 +213,25 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
       {/* Enlarged Screenshot Modal */}
       {activeImageIndex !== null && trade.chartScreenshots && (
         <div
-          className="fixed inset-0 z-60 bg-black/95 flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
           onClick={() => setActiveImageIndex(null)}
         >
+          <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
+            <span className="text-xs font-mono text-zinc-400 hidden sm:inline-block">
+              Click anywhere or press ESC to dismiss
+            </span>
+            <button
+              onClick={() => setActiveImageIndex(null)}
+              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 cursor-pointer shadow-2xl border border-white/20"
+              title="Close image"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           <img
             src={trade.chartScreenshots[activeImageIndex]}
             alt="Enlarged Screenshot"
-            className="max-w-full max-h-full object-contain rounded-xl border border-white/20"
+            className="max-w-full max-h-[90vh] object-contain rounded-2xl border border-white/20 shadow-[0_20px_70px_rgba(0,0,0,0.95)]"
           />
         </div>
       )}

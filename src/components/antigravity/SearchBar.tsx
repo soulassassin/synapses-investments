@@ -87,8 +87,8 @@ export function SearchBar() {
               type="button"
               onClick={handleMicClick}
               title="Voice Search"
-              className={`p-1.5 rounded-full transition-all duration-200 hover:bg-white/10 ${
-                isListening ? "text-white animate-pulse bg-white/20" : "text-zinc-400 hover:text-white"
+              className={`p-1.5 rounded-full transition-all duration-200 hover:bg-white/10 cursor-pointer ${
+                isListening ? "text-white animate-pulse bg-white/20 scale-110" : "text-zinc-400 hover:text-white hover:scale-110"
               }`}
             >
               <Mic className="w-4 h-4" />
@@ -97,7 +97,7 @@ export function SearchBar() {
               type="button"
               onClick={() => router.push("/dashboard/journal")}
               title="Visual Chart Search & Upload"
-              className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+              className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -106,7 +106,7 @@ export function SearchBar() {
 
         {/* Suggestion Dropdown */}
         {isFocused && (
-          <div className="absolute top-full left-0 right-0 mt-2 py-2 px-1 rounded-2xl bg-brand-900/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="absolute top-full left-0 right-0 mt-2 py-2 px-1 rounded-2xl bg-zinc-950/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
             <div className="px-3 py-1 text-[11px] font-mono tracking-wider text-zinc-500 uppercase">
               QUICK COMMAND LAUNCHER
             </div>
@@ -114,17 +114,17 @@ export function SearchBar() {
               <div
                 key={idx}
                 onMouseDown={() => router.push(item.route)}
-                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/[0.08] hover:border-white/10 cursor-pointer transition-colors group/item"
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/[0.08] hover:border-white/10 cursor-pointer transition-all duration-150 group/item"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-white">
+                  <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-white group-hover/item:scale-110 transition-transform duration-150">
                     {item.icon}
                   </div>
-                  <span className="text-sm text-zinc-200 group-hover/item:text-white font-medium">
+                  <span className="text-sm text-zinc-200 group-hover/item:text-white font-medium transition-colors">
                     {item.text}
                   </span>
                 </div>
-                <ArrowRight className="w-4 h-4 text-zinc-600 group-hover/item:text-white group-hover/item:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-zinc-600 group-hover/item:text-white group-hover/item:translate-x-1 transition-all duration-150" />
               </div>
             ))}
           </div>
@@ -135,14 +135,14 @@ export function SearchBar() {
       <div className="flex items-center justify-center gap-3 sm:gap-4 mt-6">
         <button
           onClick={() => handleSearchSubmit()}
-          className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 text-zinc-200 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all duration-200 active:scale-95"
+          className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 text-zinc-200 hover:text-white hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all duration-200 active:scale-95 cursor-pointer"
         >
           Synapses Search
         </button>
 
         <button
           onClick={() => router.push("/dashboard")}
-          className="synapses-pill-btn px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2"
+          className="synapses-pill-btn px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-black animate-spin" style={{ animationDuration: "6s" }} />
           <span>Launch Synapses Trading</span>

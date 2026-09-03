@@ -42,34 +42,34 @@ export function AntigravityNavbar() {
 
         {/* Center Nav Links (Alphabetical Order: About, Intelligence, Journal, Manifesto, Risk Calculator) */}
         <div className="hidden md:flex items-center h-full">
-          <GlassCard className="px-6 h-full flex items-center gap-5 bg-black/80 backdrop-blur-2xl border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
+          <GlassCard className="px-3.5 h-full flex items-center gap-1.5 bg-black/85 backdrop-blur-2xl border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.7)]">
             <Link
               href="/about"
-              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200 active:scale-95"
             >
               About
             </Link>
             <Link
               href="/blog"
-              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200 active:scale-95"
             >
               Intelligence
             </Link>
             <Link
               href="/dashboard/journal"
-              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200 active:scale-95"
             >
               Journal
             </Link>
             <Link
               href="/what-is-sn-journal"
-              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200 active:scale-95"
             >
               Manifesto
             </Link>
             <Link
               href="/dashboard/calculator"
-              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200 active:scale-95"
             >
               Risk Calculator
             </Link>
@@ -82,7 +82,7 @@ export function AntigravityNavbar() {
           <div className="relative h-full flex items-center">
             <button
               onClick={() => setIsAppDrawerOpen((prev) => !prev)}
-              className="h-full px-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 text-zinc-300 hover:text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 flex items-center justify-center"
+              className="h-full px-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/30 text-zinc-300 hover:text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] active:scale-95 flex items-center justify-center cursor-pointer"
               title="Synapses Ecosystem"
             >
               <Grid className="w-4 h-4" />
@@ -108,12 +108,12 @@ export function AntigravityNavbar() {
                         key={idx}
                         href={app.href}
                         onClick={() => setIsAppDrawerOpen(false)}
-                        className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/20 transition-all flex flex-col gap-1.5 group"
+                        className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/20 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.6)] transition-all duration-200 flex flex-col gap-1.5 group"
                       >
-                        <div className="p-1.5 rounded-lg bg-black/50 w-fit border border-white/10 group-hover:scale-105 transition-transform text-white">
+                        <div className="p-1.5 rounded-lg bg-black/50 w-fit border border-white/10 group-hover:scale-110 group-hover:border-white/30 transition-all duration-200 text-white">
                           {app.icon}
                         </div>
-                        <span className="text-xs font-semibold text-zinc-200 group-hover:text-white">
+                        <span className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
                           {app.name}
                         </span>
                         <span className="text-[10px] text-zinc-500">{app.desc}</span>
@@ -126,10 +126,10 @@ export function AntigravityNavbar() {
           </div>
 
           {/* Unified "SN Journal" Button (Exact Height Match) */}
-          <Link href="/login" className="h-full flex items-center">
-            <button className="h-full px-6 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 active:scale-95 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] cursor-pointer">
+          <Link href="/login" className="h-full flex items-center group">
+            <button className="h-full px-6 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
               <span>SN Journal</span>
-              <ArrowRight className="w-4 h-4 text-black" />
+              <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-0.5 transition-transform duration-200" />
             </button>
           </Link>
         </div>

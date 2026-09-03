@@ -3,9 +3,9 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "pill" | "glass" | "outline" | "ghost" | "danger" | "success";
+  variant?: "pill" | "glass" | "outline" | "ghost" | "danger" | "success" | "primary" | "glow";
   size?: "sm" | "md" | "lg" | "icon";
-  children: React.ReactNode;
+  children?: React.ReactNode;
   icon?: React.ReactNode;
   isLoading?: boolean;
 }
@@ -29,16 +29,20 @@ export function GlassButton({
 
   const variantClasses = {
     pill: "synapses-pill-btn",
+    primary:
+      "bg-white text-black font-bold hover:bg-zinc-200 shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+    glow:
+      "bg-emerald-500 text-black font-extrabold hover:bg-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.35)] hover:shadow-[0_0_35px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
     glass:
-      "bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/40 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98]",
+      "bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/40 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
     outline:
-      "bg-transparent hover:bg-white/[0.06] border border-white/[0.2] hover:border-white text-zinc-200 hover:text-white active:scale-[0.98]",
+      "bg-transparent hover:bg-white/[0.06] border border-white/[0.2] hover:border-white text-zinc-200 hover:text-white hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
     ghost:
       "bg-transparent hover:bg-white/[0.08] text-zinc-400 hover:text-white active:scale-[0.98]",
     danger:
-      "bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 hover:text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.2)] active:scale-[0.98]",
+      "bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 hover:text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
     success:
-      "bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-100 shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-[0.98]",
+      "bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-100 shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
   };
 
   return (
