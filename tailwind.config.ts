@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "Inter", "sans-serif"],
-        mono: ["JetBrains Mono", "SF Mono", "Menlo", "monospace"],
+        mono: ["var(--font-jetbrains-mono)", "JetBrains Mono", "SF Mono", "Menlo", "monospace"],
       },
       colors: {
         brand: {

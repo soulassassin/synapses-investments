@@ -1,11 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-plus-jakarta: 'Plus Jakarta Sans', sans-serif;
   --bg-black: #000000;
   --bg-dark: #050507;
   --bg-card: #0A0A0E;
@@ -26,46 +23,51 @@ html,
 body {
   background-color: #000000;
   color: #F4F4F5;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  letter-spacing: 0.025em;
-  word-spacing: 0.08em;
+  letter-spacing: 0.02em;
+  word-spacing: 0.05em;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings: Expanded letter spacing and word cadence */
+/* Headings: Clean, authoritative institutional hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: 0.045em;
-  word-spacing: 0.12em;
+  letter-spacing: 0.035em;
+  word-spacing: 0.08em;
+  font-weight: 800;
 }
 
 /* Uppercase Headlines and Badges */
 .uppercase, [class*="uppercase"] {
-  letter-spacing: 0.08em;
-  word-spacing: 0.14em;
+  letter-spacing: 0.07em;
+  word-spacing: 0.1em;
 }
 
 /* Paragraphs & Informational Descriptions */
 p, li {
-  line-height: 1.75;
-  letter-spacing: 0.02em;
-  word-spacing: 0.06em;
+  line-height: 1.7;
+  letter-spacing: 0.015em;
+  word-spacing: 0.04em;
+  color: #D4D4D8;
 }
 
 /* Buttons and Interactive Links */
 button, [role="button"], a {
-  letter-spacing: 0.035em;
-  word-spacing: 0.08em;
+  letter-spacing: 0.03em;
+  word-spacing: 0.06em;
 }
 
-/* Monospace Telemetry & Quantitative Metrics */
+/* Monospace Telemetry & Quantitative Metrics with Tabular Numbers */
 .font-mono, [class*="font-mono"] {
-  letter-spacing: 0.045em;
-  word-spacing: 0.07em;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: 0.03em;
+  word-spacing: 0.05em;
 }
 
 ::selection {

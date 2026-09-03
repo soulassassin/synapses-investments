@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { TradeProvider } from "@/context/TradeContext";
 import { GravityProvider } from "@/context/GravityContext";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://synapses-investments.vercel.app"),
@@ -143,7 +158,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`dark ${plusJakarta.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-black text-brand-100 min-h-screen relative overflow-x-hidden antialiased selection:bg-white selection:text-black font-sans">
         {/* Fixed Ambient Monochrome Lighting Background Layers */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
