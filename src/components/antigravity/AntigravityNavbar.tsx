@@ -27,9 +27,8 @@ export function AntigravityNavbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-3 px-4 pointer-events-none">
-      {/* Entire Navbar Glassmorphism Container with Hover Effect */}
-      <div className="w-full max-w-6xl flex items-center justify-between pointer-events-auto h-16 px-4 sm:px-6 rounded-2xl bg-black/75 hover:bg-black/85 backdrop-blur-2xl border border-white/10 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.75)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.85)] transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-black/75 hover:bg-black/85 backdrop-blur-2xl border-b border-white/10 hover:border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-300">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-8">
         {/* Brand Header: Clean, Unboxed Synapses Logo (No Box / No Border) */}
         <Link
           href="/"
