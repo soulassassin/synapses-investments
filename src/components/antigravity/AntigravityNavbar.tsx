@@ -20,12 +20,12 @@ export function AntigravityNavbar() {
   const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
 
   const apps = [
-    { name: "Synapses Journal", desc: "Institutional Analytics", href: "/dashboard", icon: <TrendingUp className="w-5 h-5 text-white" /> },
-    { name: "Trade Journal", desc: "Psychology & Playbook", href: "/dashboard/journal", icon: <BookOpen className="w-5 h-5 text-zinc-300" /> },
-    { name: "Market Replay", desc: "Bar-by-Bar Backtesting", href: "/dashboard/backtesting", icon: <History className="w-5 h-5 text-zinc-300" /> },
-    { name: "Risk Calculator", desc: "Lot Size & Guardrails", href: "/dashboard/calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
+    { name: "Trade Journal", desc: "ICT & SMC Playbook", href: "/dashboard/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
+    { name: "Journal Feature", desc: "System Documentation", href: "/features/trade-journal", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
+    { name: "Edge Analytics", desc: "Telemetry Quantification", href: "/features/analytics", icon: <Layers className="w-5 h-5 text-white" /> },
+    { name: "Market Replay", desc: "Tick-Level Simulator", href: "/features/replay-simulator", icon: <History className="w-5 h-5 text-zinc-300" /> },
+    { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/features/risk-calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
     { name: "Broker Gateway", desc: "Live MT5/cTrader Sync", href: "/login", icon: <Zap className="w-5 h-5 text-zinc-300" /> },
-    { name: "Quantum Docs", desc: "System Architecture", href: "/dashboard", icon: <Layers className="w-5 h-5 text-white" /> },
   ];
 
   return (
