@@ -52,7 +52,7 @@ export function BlogFeed({ posts, categories }: BlogFeedProps) {
                   </span>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight group-hover:text-zinc-200 transition-colors">
+                <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide [word-spacing:0.1em] group-hover:text-zinc-200 transition-colors">
                   {post.title}
                 </h3>
 

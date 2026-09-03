@@ -121,7 +121,7 @@ export default function BacktestingPage() {
         <div>
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-white" />
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wider [word-spacing:0.12em]">
               MARKET REPLAY & HISTORICAL BACKTESTING ENGINE
             </h1>
           </div>

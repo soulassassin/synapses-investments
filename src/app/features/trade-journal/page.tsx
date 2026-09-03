@@ -138,7 +138,7 @@ export default function TradeJournalFeaturePage() {
           <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
             ENGINEERED WITHOUT COMPROMISE
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
             THE ARCHITECTURE OF AN INSTITUTIONAL PLAYBOOK
           </h2>
         </div>

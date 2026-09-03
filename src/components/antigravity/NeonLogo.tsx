@@ -12,7 +12,7 @@ export function NeonLogo() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 px-3.5 py-1 mb-6 rounded-full bg-white/[0.05] border border-white/15 backdrop-blur-xl shadow-[0_0_20px_rgba(255,255,255,0.08)] text-[11px] font-semibold tracking-widest text-zinc-300 uppercase"
+        className="flex items-center gap-2 px-3.5 py-1 mb-6 rounded-full bg-white/[0.05] border border-white/15 backdrop-blur-xl shadow-[0_0_20px_rgba(255,255,255,0.08)] text-[11px] font-semibold tracking-widest [word-spacing:0.18em] text-zinc-300 uppercase"
       >
         <Orbit className="w-3.5 h-3.5 text-white animate-spin" style={{ animationDuration: "10s" }} />
         <span>Zero-G Physics Engine</span>
@@ -31,11 +31,11 @@ export function NeonLogo() {
 
       {/* Subtitle Telemetry */}
       <div className="flex items-center gap-3 mt-5">
-        <span className="text-xs font-mono tracking-[0.2em] text-zinc-400 uppercase">
+        <span className="text-xs font-mono tracking-[0.2em] [word-spacing:0.25em] text-zinc-400 uppercase">
           INSTITUTIONAL QUANTUM TERMINAL
         </span>
         <span className="text-zinc-600 text-xs">•</span>
-        <span className="text-xs font-mono tracking-[0.2em] text-white uppercase flex items-center gap-1 font-semibold">
+        <span className="text-xs font-mono tracking-[0.2em] [word-spacing:0.25em] text-white uppercase flex items-center gap-1 font-semibold">
           <Sparkles className="w-3 h-3 text-white" /> SYNAPSES JOURNAL
         </span>
       </div>

@@ -67,7 +67,7 @@ export function SearchBar() {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             placeholder="Search plays, tickers, metrics, or type 'journal'..."
-            className="w-full bg-transparent border-none outline-none text-white placeholder-zinc-500 text-sm sm:text-base font-normal tracking-wide"
+            className="w-full bg-transparent border-none outline-none text-white placeholder-zinc-500 text-sm sm:text-base font-normal tracking-wide [word-spacing:0.1em]"
           />
 
           {/* Clear button if text */}
@@ -107,7 +107,7 @@ export function SearchBar() {
         {/* Suggestion Dropdown */}
         {isFocused && (
           <div className="absolute top-full left-0 right-0 mt-2 py-2 px-1 rounded-2xl bg-zinc-950/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-            <div className="px-3 py-1 text-[11px] font-mono tracking-wider text-zinc-500 uppercase">
+            <div className="px-3 py-1 text-[11px] font-mono tracking-widest [word-spacing:0.15em] text-zinc-500 uppercase">
               QUICK COMMAND LAUNCHER
             </div>
             {suggestions.map((item, idx) => (

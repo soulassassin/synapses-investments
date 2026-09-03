@@ -55,7 +55,7 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-black font-mono text-white tracking-tight">
+              <span className="text-xl font-black font-mono text-white tracking-wider">
                 {trade.pair}
               </span>
               <span

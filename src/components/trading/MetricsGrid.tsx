@@ -115,7 +115,7 @@ export function MetricsGrid({ stats }: MetricsGridProps) {
             </div>
 
             <div className="my-1">
-              <span className={`text-2xl font-black font-mono tracking-tight ${card.color}`}>
+              <span className={`text-2xl font-black font-mono tracking-wider ${card.color}`}>
                 {card.value}
               </span>
             </div>

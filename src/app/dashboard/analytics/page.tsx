@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
         <div>
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-white" />
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wider [word-spacing:0.12em]">
               DEEP-DIVE EDGE & ALPHA ANALYTICS
             </h1>
           </div>

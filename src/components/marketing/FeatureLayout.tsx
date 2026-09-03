@@ -62,7 +62,7 @@ export function FeatureLayout({
           </div>
 
           {/* Heading */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white uppercase leading-[1.1]">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-wider [word-spacing:0.15em] text-white uppercase leading-[1.15]">
             {title}
           </h1>
 
@@ -79,13 +79,13 @@ export function FeatureLayout({
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href={primaryCtaHref} className="group">
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-wide [word-spacing:0.1em] transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
                 <span>{primaryCtaText}</span>
                 <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </Link>
             <Link href={secondaryCtaHref}>
-              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-white/30 text-white font-semibold text-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer">
+              <button className="px-6 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-white/30 text-white font-semibold text-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-wide [word-spacing:0.1em] transition-all duration-200 cursor-pointer">
                 {secondaryCtaText}
               </button>
             </Link>
@@ -99,7 +99,7 @@ export function FeatureLayout({
               <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
                 {s.label}
               </span>
-              <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight block">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-wider block">
                 {s.value}
               </span>
               <span className="text-[11px] text-zinc-500 font-mono block">
@@ -115,7 +115,7 @@ export function FeatureLayout({
         {/* Institutional Call To Action Banner */}
         <section className="p-8 sm:p-12 rounded-3xl bg-white/[0.02] border border-white/15 text-center relative overflow-hidden space-y-6">
           <div className="absolute inset-0 bg-radial from-white/[0.05] to-transparent pointer-events-none" />
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wider [word-spacing:0.15em] uppercase">
             EXPERIENCE THE SYNAPSES ADVANTAGE TODAY
           </h2>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto">

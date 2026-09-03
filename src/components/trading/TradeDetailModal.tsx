@@ -66,7 +66,7 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
                 FINAL NET REALIZED
               </span>
               <h2
-                className={`text-3xl font-black font-mono tracking-tight ${
+                className={`text-3xl font-black font-mono tracking-wider ${
                   isWin ? "text-emerald-400" : "text-red-400"
                 }`}
               >

@@ -73,7 +73,7 @@ export default function RiskCalculatorFeaturePage() {
           <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
             PROPRIETARY CAPITAL PRESERVATION
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
             BUILT TO PROTECT EVALUATION & FUNDED ACCOUNTS
           </h2>
         </div>

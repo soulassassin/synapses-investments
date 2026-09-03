@@ -139,7 +139,7 @@ export default function WhatIsSnJournalPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white uppercase leading-[1.1]">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-wider [word-spacing:0.15em] text-white uppercase leading-[1.15]">
             WHAT IS SYNAPSES JOURNAL?
           </h1>
 
@@ -153,7 +153,7 @@ export default function WhatIsSnJournalPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/dashboard/journal" className="group">
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-wide [word-spacing:0.1em] transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.35)] hover:shadow-[0_0_40px_rgba(255,255,255,0.55)] cursor-pointer">
                 <span>Access Live Terminal Journal</span>
                 <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>
@@ -167,7 +167,7 @@ export default function WhatIsSnJournalPage() {
             <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
               MECHANICAL DISCIPLINE
             </span>
-            <h2 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
               FOUR PILLARS OF MECHANICAL LOGGING
             </h2>
           </div>
@@ -201,7 +201,7 @@ export default function WhatIsSnJournalPage() {
             <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
               COMPETITIVE ARCHITECTURE
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
               SPREADSHEETS & NOTION VS. SYNAPSES JOURNAL
             </h2>
           </div>
@@ -264,7 +264,7 @@ export default function WhatIsSnJournalPage() {
         {/* Bottom CTA Banner */}
         <section className="p-8 sm:p-12 rounded-3xl bg-white/[0.02] border border-white/15 text-center relative overflow-hidden space-y-6">
           <div className="absolute inset-0 bg-radial from-white/[0.05] to-transparent pointer-events-none" />
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wider [word-spacing:0.15em] uppercase">
             STOP TRADING BLIND. START QUANTIFYING YOUR EDGE.
           </h2>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto">
@@ -272,8 +272,8 @@ export default function WhatIsSnJournalPage() {
           </p>
           <div className="flex justify-center gap-3">
             <Link href="/dashboard/journal">
-              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] cursor-pointer">
-                <span>Open Synapses Journal</span>
+              <button className="px-8 py-3.5 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center gap-2 hover:bg-zinc-200 tracking-wide [word-spacing:0.1em] transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] cursor-pointer">
+                <span>Open Terminal Journal</span>
                 <ArrowRight className="w-4 h-4 text-black" />
               </button>
             </Link>

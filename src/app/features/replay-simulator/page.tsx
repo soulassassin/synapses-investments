@@ -126,7 +126,7 @@ export default function ReplaySimulatorFeaturePage() {
           <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
             HISTORICAL REALISM
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
             WHY TICK-LEVEL REPLAY OUTPERFORMS STATIC CHARTS
           </h2>
         </div>

@@ -142,7 +142,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-[1.15]">
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-wider [word-spacing:0.15em] uppercase leading-[1.18]">
             {post.title}
           </h1>
 
@@ -184,7 +184,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
           {/* Main Article Body */}
           <article className="lg:col-span-3 space-y-6 text-zinc-300 leading-relaxed font-sans text-sm sm:text-base">
             <div
-              className="space-y-6 [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:text-white [&_h2]:tracking-tight [&_h2]:pt-6 [&_h2]:scroll-mt-24 [&_h2]:border-t [&_h2]:border-white/10 [&_h2]:uppercase [&_p]:text-zinc-300 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-zinc-300 [&_strong]:text-white"
+              className="space-y-6 [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:text-white [&_h2]:tracking-wider [&_h2]:[word-spacing:0.15em] [&_h2]:pt-6 [&_h2]:scroll-mt-24 [&_h2]:border-t [&_h2]:border-white/10 [&_h2]:uppercase [&_p]:text-zinc-300 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_li]:text-zinc-300 [&_strong]:text-white"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
@@ -199,7 +199,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="block text-zinc-400 hover:text-white hover:bg-white/[0.05] px-2.5 py-1.5 rounded-lg transition-all duration-150 hover:translate-x-1"
+                  className="block text-zinc-400 hover:text-white hover:bg-white/[0.05] px-2.5 py-1.5 rounded-lg tracking-wide transition-all duration-150 hover:translate-x-1"
                 >
                   {item.title}
                 </a>
@@ -211,7 +211,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
                 APPLY TO LIVE TRADING
               </span>
               <Link href="/dashboard/journal" className="group block">
-                <button className="w-full py-2.5 px-3 rounded-xl bg-white text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer">
+                <button className="w-full py-2.5 px-3 rounded-xl bg-white text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-wide [word-spacing:0.1em] transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer">
                   <span>Log Execution</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
@@ -223,7 +223,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
         {/* Footer Banner: Log Your Execution in SN Journal */}
         <section className="p-8 sm:p-10 rounded-3xl bg-zinc-950 border border-white/15 text-center relative overflow-hidden space-y-5 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
           <div className="absolute inset-0 bg-radial from-white/[0.04] to-transparent pointer-events-none" />
-          <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-xl sm:text-3xl font-black text-white tracking-wider [word-spacing:0.15em] uppercase">
             PRACTICE DISCIPLINED ORDER FLOW IN SYNAPSES JOURNAL
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto">
@@ -231,7 +231,7 @@ export default function BlogPostReaderPage({ params }: BlogPostPageProps) {
           </p>
           <div className="flex justify-center gap-3">
             <Link href="/dashboard/journal" className="group">
-              <button className="px-7 py-3 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] cursor-pointer">
+              <button className="px-7 py-3 rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-wide [word-spacing:0.1em] transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] cursor-pointer">
                 <span>Open Terminal Journal</span>
                 <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform duration-200" />
               </button>

@@ -31,9 +31,41 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.025em;
+  word-spacing: 0.08em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: Expanded letter spacing and word cadence */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: 0.045em;
+  word-spacing: 0.12em;
+}
+
+/* Uppercase Headlines and Badges */
+.uppercase, [class*="uppercase"] {
+  letter-spacing: 0.08em;
+  word-spacing: 0.14em;
+}
+
+/* Paragraphs & Informational Descriptions */
+p, li {
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  word-spacing: 0.06em;
+}
+
+/* Buttons and Interactive Links */
+button, [role="button"], a {
+  letter-spacing: 0.035em;
+  word-spacing: 0.08em;
+}
+
+/* Monospace Telemetry & Quantitative Metrics */
+.font-mono, [class*="font-mono"] {
+  letter-spacing: 0.045em;
+  word-spacing: 0.07em;
 }
 
 ::selection {

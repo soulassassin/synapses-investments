@@ -48,7 +48,7 @@ export default function CalculatorPage() {
         <div>
           <div className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-white" />
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wider [word-spacing:0.12em]">
               DYNAMIC POSITION SIZE & RISK CALCULATOR
             </h1>
           </div>
@@ -189,7 +189,7 @@ export default function CalculatorPage() {
               <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
                 RECOMMENDED POSITION SIZE
               </span>
-              <h2 className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-white">
+              <h2 className="text-4xl sm:text-5xl font-black font-mono tracking-wider text-white">
                 {calculatedLots} <span className="text-base text-zinc-400 font-sans font-normal">LOTS</span>
               </h2>
             </div>

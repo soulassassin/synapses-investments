@@ -81,7 +81,7 @@ export function PnLChart({ data }: PnLChartProps) {
             </span>
           </div>
           <div className="flex items-baseline gap-3 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
+            <h3 className="text-2xl sm:text-3xl font-black font-mono tracking-wider text-white">
               ${latestVal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </h3>
             <span

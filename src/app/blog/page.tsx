@@ -62,7 +62,7 @@ export default function BlogIndexPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white uppercase leading-[1.1]">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-wider [word-spacing:0.15em] text-white uppercase leading-[1.15]">
             TERMINAL INTELLIGENCE
           </h1>
 
@@ -81,10 +81,10 @@ export default function BlogIndexPage() {
 
               <div className="relative z-10 space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
-                  <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold uppercase">
+                  <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold uppercase tracking-wider">
                     FEATURED PUBLICATION
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-white/10 text-white font-semibold">
+                  <span className="px-2.5 py-1 rounded-md bg-white/10 text-white font-semibold tracking-wider">
                     {featuredPost.category}
                   </span>
                   <span className="text-zinc-500">•</span>
@@ -93,7 +93,7 @@ export default function BlogIndexPage() {
                   </span>
                 </div>
 
-                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight group-hover:text-zinc-200 transition-colors uppercase">
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-wider [word-spacing:0.15em] group-hover:text-zinc-200 transition-colors uppercase">
                   {featuredPost.title}
                 </h2>
 

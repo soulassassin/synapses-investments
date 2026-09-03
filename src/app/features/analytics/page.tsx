@@ -136,7 +136,7 @@ export default function AnalyticsFeaturePage() {
           <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
             EMPIRICAL EDGE VERIFICATION
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider [word-spacing:0.15em]">
             DEEP TELEMETRY DESIGNED FOR ASYMMETRIC ALPHA
           </h2>
         </div>
