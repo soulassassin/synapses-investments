@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import { TradeProvider } from "@/context/TradeContext";
 import { GravityProvider } from "@/context/GravityContext";
 
@@ -182,11 +183,13 @@ export default function RootLayout({
         />
 
         {/* Global Context Providers */}
-        <GravityProvider>
-          <TradeProvider>
-            <div className="relative z-10">{children}</div>
-          </TradeProvider>
-        </GravityProvider>
+        <AuthProvider>
+          <GravityProvider>
+            <TradeProvider>
+              <div className="relative z-10">{children}</div>
+            </TradeProvider>
+          </GravityProvider>
+        </AuthProvider>
       </body>
     </html>
   );

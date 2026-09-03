@@ -17,8 +17,10 @@ import {
   Terminal,
 } from "lucide-react";
 import { SynapsesLogo } from "../brand/SynapsesLogo";
+import { useAuth } from "@/context/AuthContext";
 
 export function AntigravityNavbar() {
+  const { user, profile } = useAuth();
   const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -125,13 +127,23 @@ export function AntigravityNavbar() {
             )}
           </div>
 
-          {/* Unified "Login" Button (Desktop & Tablet) */}
-          <Link href="/login" className="hidden sm:flex items-center group">
-            <button className="py-2.5 px-5 sm:px-6 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-widest [word-spacing:0.18em] transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
-              <span>Login</span>
-              <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform duration-200" />
-            </button>
-          </Link>
+          {/* Unified "Login" / "Terminal" Button (Desktop & Tablet) */}
+          {user ? (
+            <Link href="/dashboard" className="hidden sm:flex items-center group">
+              <button className="py-2.5 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-mono tracking-wider">{profile?.callsign || user.email?.split("@")[0]}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </Link>
+          ) : (
+            <Link href="/login" className="hidden sm:flex items-center group">
+              <button className="py-2.5 px-5 sm:px-6 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-widest [word-spacing:0.18em] transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] cursor-pointer">
+                <span>Login</span>
+                <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform duration-200" />
+              </button>
+            </Link>
+          )}
 
           {/* Mobile Hamburger Menu Toggle Button */}
           <button
@@ -214,16 +226,30 @@ export function AntigravityNavbar() {
 
           {/* Bottom Actions on Mobile: Login Button & System Status */}
           <div className="pt-6 border-t border-white/10 space-y-3">
-            <Link
-              href="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full"
-            >
-              <button className="w-full py-3.5 px-6 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 active:scale-98 tracking-widest [word-spacing:0.18em] transition-all shadow-[0_0_25px_rgba(255,255,255,0.3)] cursor-pointer">
-                <span>Login to Terminal</span>
-                <ArrowRight className="w-4 h-4 text-black" />
-              </button>
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block w-full"
+              >
+                <button className="w-full py-3.5 px-6 rounded-2xl bg-white/[0.08] border border-white/20 text-white font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-white/[0.15] active:scale-98 tracking-widest [word-spacing:0.18em] transition-all cursor-pointer">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Enter Terminal ({profile?.callsign || "Active"})</span>
+                  <ArrowRight className="w-4 h-4 text-white" />
+                </button>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block w-full"
+              >
+                <button className="w-full py-3.5 px-6 rounded-2xl bg-white text-black font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 active:scale-98 tracking-widest [word-spacing:0.18em] transition-all shadow-[0_0_25px_rgba(255,255,255,0.3)] cursor-pointer">
+                  <span>Login to Terminal</span>
+                  <ArrowRight className="w-4 h-4 text-black" />
+                </button>
+              </Link>
+            )}
 
             <div className="text-center text-[10px] font-mono text-zinc-500 flex items-center justify-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
