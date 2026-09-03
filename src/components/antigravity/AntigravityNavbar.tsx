@@ -21,10 +21,10 @@ export function AntigravityNavbar() {
 
   const apps = [
     { name: "Trade Journal", desc: "ICT & SMC Playbook", href: "/dashboard/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
-    { name: "Journal Feature", desc: "System Documentation", href: "/features/trade-journal", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
-    { name: "Edge Analytics", desc: "Telemetry Quantification", href: "/features/analytics", icon: <Layers className="w-5 h-5 text-white" /> },
-    { name: "Market Replay", desc: "Tick-Level Simulator", href: "/features/replay-simulator", icon: <History className="w-5 h-5 text-zinc-300" /> },
-    { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/features/risk-calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
+    { name: "SN Manifesto", desc: "Mechanical Execution", href: "/what-is-sn-journal", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
+    { name: "Intelligence", desc: "Research & Order Flow", href: "/blog", icon: <Layers className="w-5 h-5 text-white" /> },
+    { name: "About Synapses", desc: "Zero-G Thesis & Vision", href: "/about", icon: <History className="w-5 h-5 text-zinc-300" /> },
+    { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/dashboard/calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
     { name: "Broker Gateway", desc: "Live MT5/cTrader Sync", href: "/login", icon: <Zap className="w-5 h-5 text-zinc-300" /> },
   ];
 
@@ -42,7 +42,7 @@ export function AntigravityNavbar() {
 
         {/* Center Nav Links (Flush, In-Line) */}
         <div className="hidden md:flex items-center h-full">
-          <GlassCard className="px-7 h-full flex items-center gap-6 bg-black/80 backdrop-blur-2xl border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
+          <GlassCard className="px-6 h-full flex items-center gap-5 bg-black/80 backdrop-blur-2xl border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
             <Link
               href="/dashboard/journal"
               className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
@@ -50,16 +50,22 @@ export function AntigravityNavbar() {
               Journal
             </Link>
             <Link
-              href="/dashboard/analytics"
+              href="/what-is-sn-journal"
               className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
             >
-              Analytics
+              Manifesto
             </Link>
             <Link
-              href="/dashboard/backtesting"
+              href="/blog"
               className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
             >
-              Replay Simulator
+              Intelligence
+            </Link>
+            <Link
+              href="/about"
+              className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+            >
+              About
             </Link>
             <Link
               href="/dashboard/calculator"
