@@ -1,0 +1,95 @@
+import { ReplayScenario, CandleData } from "./types";
+
+export type ReplayCandle = CandleData;
+
+export const marketReplayScenarios: ReplayScenario[] = [
+  {
+    id: "scenario-1",
+    name: "NAS100 NY AM Silver Bullet (Liquidity Sweep)",
+    ticker: "NAS100",
+    timeframe: "5m",
+    difficulty: "Intermediate",
+    description: "The 09:30 AM Eastern opening bell sweeps the Asian/London high before displacing aggressively lower, offering a clean 5-minute Fair Value Gap entry into the sell-side liquidity pool.",
+    initialBalance: 100000,
+    candles: [
+      { time: "09:00", open: 19850, high: 19865, low: 19842, close: 19860, volume: 1420 },
+      { time: "09:05", open: 19860, high: 19875, low: 19855, close: 19870, volume: 1890 },
+      { time: "09:10", open: 19870, high: 19882, low: 19865, close: 19878, volume: 2100 },
+      { time: "09:15", open: 19878, high: 19885, low: 19868, close: 19872, volume: 1950 },
+      { time: "09:20", open: 19872, high: 19880, low: 19860, close: 19865, volume: 1780 },
+      { time: "09:25", open: 19865, high: 19874, low: 19858, close: 19862, volume: 2200 },
+      // 09:30 Opening Bell Spike (Sweeps Buy Side)
+      { time: "09:30", open: 19862, high: 19935, low: 19860, close: 19920, volume: 8900 },
+      { time: "09:35", open: 19920, high: 19942, low: 19890, close: 19895, volume: 7400 },
+      // Displacement lower creating Fair Value Gap
+      { time: "09:40", open: 19895, high: 19900, low: 19820, close: 19825, volume: 9100 },
+      { time: "09:45", open: 19825, high: 19835, low: 19780, close: 19785, volume: 8200 },
+      // Retracement into FVG (Entry Zone: ~19840 - 19860)
+      { time: "09:50", open: 19785, high: 19845, low: 19780, close: 19840, volume: 4300 },
+      { time: "09:55", open: 19840, high: 19855, low: 19820, close: 19825, volume: 4600 },
+      // Silver Bullet Window 10:00 - 11:00 AM Expansion Lower
+      { time: "10:00", open: 19825, high: 19830, low: 19750, close: 19755, volume: 7800 },
+      { time: "10:05", open: 19755, high: 19765, low: 19710, close: 19715, volume: 6900 },
+      { time: "10:10", open: 19715, high: 19730, low: 19680, close: 19685, volume: 7100 },
+      { time: "10:15", open: 19685, high: 19700, low: 19650, close: 19655, volume: 6500 },
+      { time: "10:20", open: 19655, high: 19670, low: 19620, close: 19625, volume: 6100 },
+      { time: "10:25", open: 19625, high: 19640, low: 19600, close: 19605, volume: 5900 },
+      { time: "10:30", open: 19605, high: 19615, low: 19570, close: 19575, volume: 8400 },
+      { time: "10:35", open: 19575, high: 19590, low: 19550, close: 19555, volume: 7200 },
+      { time: "10:40", open: 19555, high: 19570, low: 19535, close: 19540, volume: 5800 },
+      { time: "10:45", open: 19540, high: 19580, low: 19538, close: 19575, volume: 4900 },
+      { time: "10:50", open: 19575, high: 19610, low: 19565, close: 19595, volume: 4200 },
+      { time: "10:55", open: 19595, high: 19620, low: 19580, close: 19610, volume: 3800 },
+    ],
+  },
+  {
+    id: "scenario-2",
+    name: "EUR/USD London Judas Swing & Trend Day",
+    ticker: "EUR/USD",
+    timeframe: "15m",
+    difficulty: "Master",
+    description: "London session opening manipulation creates a false breakdown below the Asian range low, trapping retail breakout sellers before embarking on a +85 pip sustained rally into the New York session.",
+    initialBalance: 100000,
+    candles: [
+      { time: "06:00", open: 1.08250, high: 1.08280, low: 1.08230, close: 1.08240, volume: 800 },
+      { time: "06:30", open: 1.08240, high: 1.08260, low: 1.08210, close: 1.08220, volume: 750 },
+      { time: "07:00", open: 1.08220, high: 1.08250, low: 1.08180, close: 1.08190, volume: 1100 },
+      { time: "07:30", open: 1.08190, high: 1.08210, low: 1.08140, close: 1.08150, volume: 1400 },
+      { time: "08:00", open: 1.08150, high: 1.08170, low: 1.07920, close: 1.07960, volume: 4500 },
+      { time: "08:30", open: 1.07960, high: 1.08180, low: 1.07940, close: 1.08150, volume: 5200 },
+      { time: "09:00", open: 1.08150, high: 1.08380, low: 1.08120, close: 1.08350, volume: 5800 },
+      { time: "09:30", open: 1.08350, high: 1.08490, low: 1.08310, close: 1.08460, volume: 4900 },
+      { time: "10:00", open: 1.08460, high: 1.08620, low: 1.08420, close: 1.08580, volume: 4200 },
+      { time: "10:30", open: 1.08580, high: 1.08710, low: 1.08540, close: 1.08690, volume: 3900 },
+      { time: "11:00", open: 1.08690, high: 1.08850, low: 1.08650, close: 1.08820, volume: 4100 },
+      { time: "11:30", open: 1.08820, high: 1.08940, low: 1.08790, close: 1.08910, volume: 3700 },
+      { time: "12:00", open: 1.08910, high: 1.09050, low: 1.08870, close: 1.09020, volume: 4300 },
+      { time: "12:30", open: 1.09020, high: 1.09180, low: 1.08990, close: 1.09150, volume: 4800 },
+    ],
+  },
+  {
+    id: "scenario-3",
+    name: "BTC/USD 4H Order Block Institutional Accumulation",
+    ticker: "BTC/USD",
+    timeframe: "1h",
+    difficulty: "Beginner",
+    description: "Bitcoin tests the key institutional 4H order block at $61,500 after a week of downward consolidation. Spot bid absorption creates a bullish engulfing pattern initiating a strong reversal.",
+    initialBalance: 100000,
+    candles: [
+      { time: "00:00", open: 62200, high: 62350, low: 61950, close: 62050, volume: 320 },
+      { time: "01:00", open: 62050, high: 62100, low: 61750, close: 61800, volume: 410 },
+      { time: "02:00", open: 61800, high: 61850, low: 61420, close: 61500, volume: 680 },
+      { time: "03:00", open: 61500, high: 61650, low: 61380, close: 61550, volume: 890 },
+      { time: "04:00", open: 61550, high: 62200, low: 61500, close: 62150, volume: 1450 },
+      { time: "05:00", open: 62150, high: 62700, low: 62050, close: 62650, volume: 1820 },
+      { time: "06:00", open: 62650, high: 63100, low: 62500, close: 62980, volume: 1650 },
+      { time: "07:00", open: 62980, high: 63450, low: 62850, close: 63350, volume: 1540 },
+      { time: "08:00", open: 63350, high: 63900, low: 63200, close: 63800, volume: 1950 },
+      { time: "09:00", open: 63800, high: 64350, low: 63700, close: 64200, volume: 2200 },
+      { time: "10:00", open: 64200, high: 64800, low: 64100, close: 64750, volume: 2450 },
+      { time: "11:00", open: 64750, high: 65200, low: 64600, close: 65100, volume: 2100 },
+    ],
+  },
+];
+
+export const mockReplayCandles: CandleData[] = marketReplayScenarios[0].candles;

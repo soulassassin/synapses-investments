@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" fill="none">
+  <g fill="#000000">
+    <!-- Top Ribbon of S -->
+    <path d="M 15 20 H 85 C 104.33 20 120 35.67 120 55 C 120 64.2 116.3 72.6 110.3 78.7 L 48 120 L 32 104 L 79.5 68 C 83.2 65.2 85.5 60.8 85.5 56 C 85.5 49.65 80.35 44.5 74 44.5 H 15 Z" />
+    
+    <!-- Bottom Ribbon of S -->
+    <path d="M 120 120 H 50 C 30.67 120 15 104.33 15 85 C 15 75.8 18.7 67.4 24.7 61.3 L 87 20 L 103 36 L 55.5 72 C 51.8 74.8 49.5 79.2 49.5 84 C 49.5 90.35 54.65 95.5 61 95.5 H 120 Z" />
+  </g>
+  <!-- Wordmark -->
+  <text x="155" y="66" fill="#000000" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="44" letter-spacing="0.16em">SYNAPSES</text>
+  <text x="155" y="114" fill="#000000" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="44" letter-spacing="0.10em">INVESTMENTS</text>
+</svg>
