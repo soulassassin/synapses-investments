@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { Trade, FilterOptions, BrokerAccount, MetricStats } from "@/lib/types";
-import { initialTrades, initialBrokerAccounts } from "@/lib/mockTrades";
+import { Trade, FilterOptions, BrokerAccount, MetricStats, PlaybookStrategy } from "@/lib/types";
+import { initialTrades, initialBrokerAccounts, initialPlaybookStrategies } from "@/lib/mockTrades";
 import { useTradeMetrics, PnLPoint } from "@/hooks/useTradeMetrics";
 
 export interface CurrentMetrics extends MetricStats {
@@ -30,7 +30,14 @@ interface TradeContextType {
   setSelectedAccount: (acc: string) => void;
   connectBroker: (platform: BrokerAccount["platform"], name: string, accountNumber: string) => void;
   exportToCSV: () => void;
+  // Playbook Custom Strategies CRUD
+  playbookStrategies: PlaybookStrategy[];
+  addPlaybookStrategy: (strategy: Omit<PlaybookStrategy, "id" | "createdAt">) => void;
+  updatePlaybookStrategy: (id: string, updated: Partial<PlaybookStrategy>) => void;
+  deletePlaybookStrategy: (id: string) => void;
+  resetDefaultStrategies: () => void;
 }
+
 
 const defaultFilters: FilterOptions = {
   ticker: "",
@@ -47,10 +54,12 @@ const TradeContext = createContext<TradeContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = "synapses_journal_trades_v1";
 const LOCAL_STORAGE_ACCOUNTS_KEY = "synapses_journal_accounts_v1";
+const LOCAL_STORAGE_PLAYBOOK_KEY = "synapses_journal_playbook_v1";
 
 export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const [brokerAccounts, setBrokerAccounts] = useState<BrokerAccount[]>(initialBrokerAccounts);
+  const [playbookStrategies, setPlaybookStrategies] = useState<PlaybookStrategy[]>(initialPlaybookStrategies);
   const [selectedAccount, setSelectedAccount] = useState<string>("ALL");
   const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -83,7 +92,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
               slippagePips: Number(t.slippagePips) || 0,
               spreadPips: Number(t.spreadPips) || 0,
               rMultiple: Number(t.rMultiple) || 0,
-              strategy: t.strategy || "ICT Silver Bullet",
+              strategy: t.strategy || "Macro Range Expansion",
               setup: t.setup || "Fair Value Gap",
               mistakeTags: Array.isArray(t.mistakeTags) ? t.mistakeTags : [],
               marketCondition: t.marketCondition || "Trending Bullish",
@@ -106,6 +115,13 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           const parsedAccs = JSON.parse(savedAccounts);
           if (Array.isArray(parsedAccs) && parsedAccs.length > 0) {
             setBrokerAccounts(parsedAccs);
+          }
+        }
+        const savedPlaybook = localStorage.getItem(LOCAL_STORAGE_PLAYBOOK_KEY);
+        if (savedPlaybook) {
+          const parsedPlaybook = JSON.parse(savedPlaybook);
+          if (Array.isArray(parsedPlaybook) && parsedPlaybook.length > 0) {
+            setPlaybookStrategies(parsedPlaybook);
           }
         }
       }
@@ -135,6 +151,17 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [brokerAccounts, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded && typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_PLAYBOOK_KEY, JSON.stringify(playbookStrategies));
+      } catch (e) {
+        console.warn("Could not save playbook strategies to localStorage", e);
+      }
+    }
+  }, [playbookStrategies, isLoaded]);
+
 
   const addTrade = (tradeData: Omit<Trade, "id">) => {
     const newTrade: Trade = {
@@ -210,6 +237,30 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const resetSampleData = () => {
     setTrades(initialTrades);
     setBrokerAccounts(initialBrokerAccounts);
+    setPlaybookStrategies(initialPlaybookStrategies);
+  };
+
+  const addPlaybookStrategy = (stratData: Omit<PlaybookStrategy, "id" | "createdAt">) => {
+    const newStrategy: PlaybookStrategy = {
+      ...stratData,
+      id: `strat-${Date.now().toString().slice(-6)}`,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    setPlaybookStrategies((prev) => [newStrategy, ...prev]);
+  };
+
+  const updatePlaybookStrategy = (id: string, updated: Partial<PlaybookStrategy>) => {
+    setPlaybookStrategies((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updated } : s))
+    );
+  };
+
+  const deletePlaybookStrategy = (id: string) => {
+    setPlaybookStrategies((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const resetDefaultStrategies = () => {
+    setPlaybookStrategies(initialPlaybookStrategies);
   };
 
   const resetFilters = () => {
@@ -378,12 +429,18 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         setSelectedAccount,
         connectBroker,
         exportToCSV,
+        playbookStrategies,
+        addPlaybookStrategy,
+        updatePlaybookStrategy,
+        deletePlaybookStrategy,
+        resetDefaultStrategies,
       }}
     >
       {children}
     </TradeContext.Provider>
   );
 }
+
 
 export function useTrades() {
   const context = useContext(TradeContext);

@@ -26,7 +26,7 @@ import {
 export const metadata: Metadata = {
   title: "The Trade Journal | Execution Black Box & Interactive Demo",
   description:
-    "The institutional black box for proprietary trade executions. Audit ICT/SMC confluences, track behavioral psychology, and quantify statistical edge with zero latency.",
+    "The institutional black box for proprietary trade executions. Audit quantitative confluences, track behavioral psychology, and quantify statistical edge with zero latency.",
   alternates: {
     canonical: "https://synapses-investments.vercel.app/journal",
   },
@@ -50,7 +50,7 @@ export default function JournalMarketingPage() {
       icon: <ImageIcon className="w-6 h-6 text-cyan-400" />,
       badge: "PLAYBOOK CHART VAULT",
       title: "Multi-Timeframe Visual Replay Archive",
-      desc: "Instantly vault multi-timeframe chart captures before execution, during live fill, and after target delivery. Build an unshakeable subconscious pattern recognition library of A+ ICT/SMC algorithmic setups.",
+      desc: "Instantly vault multi-timeframe chart captures before execution, during live fill, and after target delivery. Build an unshakeable subconscious pattern recognition library of A+ quantitative setups.",
     },
     {
       icon: <Shield className="w-6 h-6 text-emerald-400" />,

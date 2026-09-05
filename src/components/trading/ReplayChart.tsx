@@ -176,7 +176,7 @@ export function ReplayChart({ scenario, candles: propCandles, currentIndex: prop
               {scenario?.ticker || "NAS100"} • {scenario?.timeframe || "5m"} BAR-BY-BAR REPLAY
             </span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white border border-white/20">
-              {scenario?.difficulty || "ICT Model"} Playbook
+              {scenario?.difficulty || "Quant Model"} Playbook
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-1 max-w-2xl">

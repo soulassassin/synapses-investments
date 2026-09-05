@@ -169,3 +169,17 @@ export interface BrokerAccount {
   equity: number;
   lastSync: string;
 }
+
+export interface PlaybookStrategy {
+  id: string;
+  name: string;
+  description: string;
+  setupCategory?: string;
+  targetRR: number;
+  rules: string[];
+  timeframes?: string[];
+  confluenceTags?: string[];
+  createdAt: string;
+  isDefault?: boolean;
+}
+

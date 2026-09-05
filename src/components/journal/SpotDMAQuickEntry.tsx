@@ -32,24 +32,24 @@ const SUPPORTED_ASSETS: { symbol: string; name: string; assetClass: AssetClass; 
   { symbol: "SOLUSD", name: "Solana", assetClass: "Crypto", defaultSLOffset: 1.5, defaultTPOffset: 4.5 },
 ];
 
-const SETUPS = [
-  "ICT Silver Bullet",
-  "Fair Value Gap",
-  "Order Block",
-  "Liquidity Sweep",
-  "Breaker Block",
-  "Turtle Soup",
-  "Judas Swing Reversal",
+const DEFAULT_SETUPS = [
+  "Macro Range Expansion",
+  "Session Extreme Sweep",
+  "Fair Value Imbalance",
+  "Order Block Retest",
+  "Breaker Block Reversal",
+  "False Breakout Purge",
 ];
 
 export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryProps) {
   const { getTicker } = useDMAContext();
-  const { addTrade, brokerAccounts } = useTrades();
+  const { addTrade, brokerAccounts, playbookStrategies } = useTrades();
 
   const [symbol, setSymbol] = useState("NAS100");
   const [direction, setDirection] = useState<TradeDirection>("LONG");
-  const [setup, setSetup] = useState("ICT Silver Bullet");
+  const [setup, setSetup] = useState("Macro Range Expansion");
   const [session, setSession] = useState<SessionName>("New York");
+
   const [entryPrice, setEntryPrice] = useState<number>(0);
   const [stopLoss, setStopLoss] = useState<number>(0);
   const [takeProfit, setTakeProfit] = useState<number>(0);
@@ -293,23 +293,27 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
         {/* 3. Setup Model */}
         <div>
           <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
-            SETUP MODEL
+            STRATEGY / SETUP
           </label>
           <select
             value={setup}
             onChange={(e) => setSetup(e.target.value)}
             className="w-full px-2.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
           >
-            {SETUPS.map((s) => (
+            {(playbookStrategies && playbookStrategies.length > 0
+              ? playbookStrategies.map((s) => s.name)
+              : DEFAULT_SETUPS
+            ).map((s) => (
               <option key={s} value={s} className="bg-black text-white">
                 {s}
               </option>
             ))}
           </select>
           <div className="mt-1 text-[10px] font-mono text-zinc-500">
-            ICT Execution
+            Systematic Model
           </div>
         </div>
+
 
         {/* 4. Entry & Stop Loss */}
         <div>

@@ -271,7 +271,7 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* STEP 2: ICT & SMC PLAYBOOK CONFLUENCES */}
+          {/* STEP 2: QUANTITATIVE PLAYBOOK CONFLUENCES */}
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <div>

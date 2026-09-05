@@ -35,7 +35,7 @@ const DEFAULT_FILTERS: JournalFilters = {
 
 export const INITIAL_SEED_TRADES: TradeLog[] = [
   {
-    id: 'ict-seed-001',
+    id: 'trade-seed-001',
     timestamp: '2026-09-02T14:32:00.000Z',
     pair: 'NAS100',
     direction: 'LONG',
@@ -56,7 +56,7 @@ export const INITIAL_SEED_TRADES: TradeLog[] = [
     chartScreenshots: [],
   },
   {
-    id: 'ict-seed-002',
+    id: 'trade-seed-002',
     timestamp: '2026-09-01T08:15:00.000Z',
     pair: 'EURUSD',
     direction: 'SHORT',
@@ -77,7 +77,7 @@ export const INITIAL_SEED_TRADES: TradeLog[] = [
     chartScreenshots: [],
   },
   {
-    id: 'ict-seed-003',
+    id: 'trade-seed-003',
     timestamp: '2026-08-31T15:45:00.000Z',
     pair: 'US30',
     direction: 'SHORT',
@@ -98,7 +98,7 @@ export const INITIAL_SEED_TRADES: TradeLog[] = [
     chartScreenshots: [],
   },
   {
-    id: 'ict-seed-004',
+    id: 'trade-seed-004',
     timestamp: '2026-08-29T10:10:00.000Z',
     pair: 'XAUUSD',
     direction: 'LONG',
@@ -119,7 +119,7 @@ export const INITIAL_SEED_TRADES: TradeLog[] = [
     chartScreenshots: [],
   },
   {
-    id: 'ict-seed-005',
+    id: 'trade-seed-005',
     timestamp: '2026-08-28T02:30:00.000Z',
     pair: 'BTCUSD',
     direction: 'LONG',
@@ -140,7 +140,7 @@ export const INITIAL_SEED_TRADES: TradeLog[] = [
     chartScreenshots: [],
   },
   {
-    id: 'ict-seed-006',
+    id: 'trade-seed-006',
     timestamp: '2026-08-27T14:40:00.000Z',
     pair: 'SPX500',
     direction: 'LONG',

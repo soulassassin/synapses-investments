@@ -52,7 +52,7 @@ export function CSVImportModal({ isOpen, onClose }: CSVImportModalProps) {
   };
 
   const sampleCSV = `Ticker,AssetClass,Direction,EntryDate,ExitDate,Session,EntryPrice,ExitPrice,StopLoss,TakeProfit,PositionSize,GrossPnL,NetPnL,Commission,Swap,RMultiple,Strategy,Setup,MistakeTags,MarketCondition,Confidence,Stress,Discipline,Notes,Account
-NAS100,Indices,LONG,2026-08-30 14:30,2026-08-30 15:45,New York,19850,19960,19810,19970,5,550,520,30,0,2.75,ICT Silver Bullet,Fair Value Gap,,Trending Bullish,5,2,5,Clean FVG fill,Apex Prop 100K Fund`;
+NAS100,Indices,LONG,2026-08-30 14:30,2026-08-30 15:45,New York,19850,19960,19810,19970,5,550,520,30,0,2.75,Macro Range Expansion,Fair Value Gap,,Trending Bullish,5,2,5,Clean FVG fill,Apex Prop 100K Fund`;
 
   return (
     <GlassModal

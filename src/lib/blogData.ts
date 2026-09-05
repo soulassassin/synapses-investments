@@ -1,6 +1,6 @@
 export type BlogCategory =
   | 'All'
-  | 'ICT / SMC Mechanics'
+  | 'Market Microstructure & Order Flow'
   | 'Risk Management'
   | 'Trading Psychology'
   | 'Futures & Prop Protocols';
@@ -33,7 +33,7 @@ export const BLOG_POSTS: BlogPost[] = [
     slug: 'understanding-institutional-liquidity-nas100',
     title: 'Understanding Institutional Liquidity: Buy-Side vs. Sell-Side Sweeps on NAS100',
     subtitle: 'A structural breakdown of algorithmic price delivery, liquidity engineering, and the execution anatomy of index sweeps.',
-    category: 'ICT / SMC Mechanics',
+    category: 'Market Microstructure & Order Flow',
     publishedAt: '2026-09-01',
     readTime: '7 min read',
     featured: true,
@@ -59,17 +59,16 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>
         When an institution needs to accumulate 10,000 contracts of E-mini Nasdaq futures (NQ), they cannot simply press a market buy button without blowing the spread out by dozens of points. Instead, they require a thick concentration of sell market orders. Where do those orders sit? Precisely below previous swing lows and equal lows as retail sell-stops.
       </p>
+      <p>
+        Synapses quant algorithms isolate these key liquidity pockets as the primary catalyst for order book displacement.
+      </p>
 
       <h2 id="liquidity-pools">2. Anatomy of Buy-Side (BSL) & Sell-Side (SSL) Pools</h2>
       <p>
-        Liquidity is binary in its resting state:
+        Buy-Side Liquidity (BSL) represents pools of resting buy-stop orders (stop losses on short trades and breakout buy-stops). When price breaches previous session highs, these buy orders are triggered at market, offering immediate buy liquidity for large institutional participants looking to offload inventory or establish large short positions.
       </p>
-      <ul>
-        <li><strong>Buy-Side Liquidity (BSL):</strong> Resting buy stops placed by short sellers protecting their positions, as well as retail breakout buy stops located above swing highs and equal highs.</li>
-        <li><strong>Sell-Side Liquidity (SSL):</strong> Resting sell stops placed by longs protecting capital, alongside breakout short sellers beneath swing lows and equal lows.</li>
-      </ul>
       <p>
-        A "Sweep" occurs when the algorithm aggressively drives price through an established pool, triggering stop-loss market orders that are instantly swallowed by institutional limit orders on the opposite side of the book.
+        Sell-Side Liquidity (SSL) functions inversely: stop orders below old lows provide the required sell flow to match institutional buy orders.
       </p>
 
       <h2 id="the-nas100-macro-window">3. NAS100 09:30 & 10:00 EST Liquidity Injection</h2>
@@ -153,7 +152,7 @@ export const BLOG_POSTS: BlogPost[] = [
     slug: 'anatomy-of-fair-value-gap-premium-vs-discount',
     title: 'Anatomy of a Fair Value Gap (FVG): Premium vs. Discount Arrays Explained',
     subtitle: 'Mastering 3-candle price imbalances, mitigation dynamics, and equilibrium profiling for high-probability trade location.',
-    category: 'ICT / SMC Mechanics',
+    category: 'Market Microstructure & Order Flow',
     publishedAt: '2026-08-22',
     readTime: '8 min read',
     featured: false,

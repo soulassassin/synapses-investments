@@ -131,7 +131,7 @@ const MICROSTRUCTURE_ELEMENTS = [
     tag: "CAPITAL FOOTPRINT",
     color: "amber",
     summary:
-      "The final up-close or down-close candle prior to aggressive displacement. Order blocks mark the exact price levels where smart money accumulated large positions that must be defended on subsequent pullbacks.",
+      "The final up-close or down-close candle prior to aggressive displacement. Order blocks mark the exact price levels where institutional algorithms accumulated large positions that must be defended on subsequent pullbacks.",
     telemetry: "Mitigation Defense Rate: 82.1% • Risk Boundary: Invalidation below Open/Low",
   },
   {

@@ -46,7 +46,7 @@ export function FloatingCanvas() {
               </div>
               <div className="text-left">
                 <span className="text-xs font-bold text-white block tracking-wider">Trade Journal</span>
-                <span className="text-[10px] font-mono text-zinc-400 block">ICT & SMC Visual Logger</span>
+                <span className="text-[10px] font-mono text-zinc-400 block">Visual Playbook & Logger</span>
               </div>
             </div>
             <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
@@ -164,7 +164,7 @@ export function FloatingCanvas() {
         <ClientErrorBoundary componentName="AppCapsuleJournal">
           <AppCapsule
             title="Trade Journal & Playbook"
-            subtitle="ICT & SMC Visual Logger"
+            subtitle="Visual Playbook & Logger"
             icon={<Brain className="w-5 h-5 text-white" />}
             href="/dashboard/journal"
             badge="ALPHA LOGS"

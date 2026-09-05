@@ -17,7 +17,7 @@ interface TradeLogModalProps {
 }
 
 export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalProps) {
-  const { addTrade, updateTrade, brokerAccounts } = useTrades();
+  const { addTrade, updateTrade, brokerAccounts, playbookStrategies } = useTrades();
 
   const [ticker, setTicker] = useState("NAS100");
   const [assetClass, setAssetClass] = useState<AssetClass>("Indices");
@@ -32,8 +32,9 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
   const [positionSize, setPositionSize] = useState(5.0);
   const [commission, setCommission] = useState(35.00);
   const [swap, setSwap] = useState(0.00);
-  const [strategy, setStrategy] = useState("ICT Silver Bullet");
+  const [strategy, setStrategy] = useState("Macro Range Expansion");
   const [setup, setSetup] = useState("Fair Value Gap");
+
   const [marketCondition, setMarketCondition] = useState<MarketCondition>("Trending Bullish");
   const [mistakeTags, setMistakeTags] = useState<string[]>([]);
   const [confidence, setConfidence] = useState(5);
@@ -390,11 +391,17 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
               <label className="text-[11px] text-zinc-400 block mb-1">Strategy Name</label>
               <input
                 type="text"
+                list="playbook-strategies-list"
                 value={strategy}
                 onChange={(e) => setStrategy(e.target.value)}
-                placeholder="e.g. ICT Silver Bullet"
+                placeholder="e.g. Volatility Compression Breakout"
                 className="w-full glass-input px-3 py-1.5 rounded-xl text-xs"
               />
+              <datalist id="playbook-strategies-list">
+                {(playbookStrategies || []).map((s) => (
+                  <option key={s.id} value={s.name} />
+                ))}
+              </datalist>
             </div>
 
             <div>

@@ -36,12 +36,12 @@ const ASSET_PAIRS: AssetPair[] = [
 const SESSIONS: SessionType[] = ["LONDON", "NY_AM", "NY_PM", "ASIA"];
 
 const SETUP_MODELS: { value: SetupModel; label: string }[] = [
-  { value: "SILVER_BULLET", label: "ICT Silver Bullet" },
-  { value: "FVG", label: "Fair Value Gap (FVG)" },
+  { value: "SILVER_BULLET", label: "Macro Range Expansion" },
+  { value: "FVG", label: "Fair Value Imbalance (FVG)" },
   { value: "ORDER_BLOCK", label: "Order Block (OB)" },
   { value: "LIQUIDITY_SWEEP", label: "Liquidity Sweep" },
   { value: "BREAKER", label: "Breaker Block" },
-  { value: "TURTLE_SOUP", label: "Turtle Soup" },
+  { value: "TURTLE_SOUP", label: "False Breakout Purge" },
 ];
 
 const EMOTIONAL_STATES: { value: EmotionalState; label: string; color: string }[] = [
@@ -52,7 +52,7 @@ const EMOTIONAL_STATES: { value: EmotionalState; label: string; color: string }[
   { value: "REVENGE", label: "Revenge Trade", color: "text-red-400 border-red-500/30 bg-red-500/10" },
 ];
 
-const ICT_CONFLUENCES = [
+const STRATEGY_CONFLUENCES = [
   "Fair Value Gap (FVG)",
   "Liquidity Sweep (BSL / SSL)",
   "Market Structure Shift (MSS)",
@@ -62,6 +62,7 @@ const ICT_CONFLUENCES = [
   "High Relative Volume",
   "Killzone Macro Window",
 ];
+
 
 export function TradeModal({ isOpen, onClose, tradeToEdit }: TradeModalProps) {
   const { addTrade, updateTrade } = useJournalStore();
@@ -240,7 +241,7 @@ export function TradeModal({ isOpen, onClose, tradeToEdit }: TradeModalProps) {
                 {tradeToEdit ? "EDIT EXECUTION RECORD" : "LOG INSTITUTIONAL EXECUTION"}
               </h2>
               <p className="text-[11px] font-mono text-zinc-400">
-                ICT / SMC Precision Journal • Zero-G DMA Telemetry
+                Quantitative Precision Journal • Zero-G DMA Telemetry
               </p>
             </div>
           </div>
@@ -447,15 +448,15 @@ export function TradeModal({ isOpen, onClose, tradeToEdit }: TradeModalProps) {
             </div>
           </div>
 
-          {/* Section 2: ICT/SMC Confluences */}
+          {/* Section 2: Strategy Confluences */}
           <div className="space-y-2 pt-2 border-t border-white/10">
             <span className="text-[11px] font-mono text-zinc-400 tracking-wider uppercase flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-white" />
-              2. ICT & Smart Money Confluences
+              2. Strategy & Execution Confluences
             </span>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {ICT_CONFLUENCES.map((item) => {
+              {STRATEGY_CONFLUENCES.map((item) => {
                 const isChecked = selectedConfluences.includes(item);
                 return (
                   <button

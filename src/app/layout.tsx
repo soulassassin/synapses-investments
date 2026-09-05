@@ -22,24 +22,22 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://synapses-investments.vercel.app"),
   title: {
-    default: "Synapses Investments | Institutional Trading Terminal & ICT/SMC Journal",
+    default: "Synapses Investments | Institutional Trading Terminal & Quantitative Journal",
     template: "%s | Synapses Investments",
   },
   description:
-    "Next-generation institutional trading terminal, ICT & Smart Money Concepts trade journaling, tick replay simulation, mathematical risk models, and zero-latency DMA telemetry.",
+    "Next-generation institutional trading terminal, quantitative trade journaling, tick replay simulation, mathematical risk models, and zero-latency DMA telemetry.",
   keywords: [
     "Synapses Investments",
-    "ICT trading",
-    "Smart Money Concepts",
-    "SMC trade journal",
-    "trade journal",
+    "quantitative trading",
+    "proprietary trading journal",
+    "systematic trade journal",
     "institutional order flow",
     "NAS100 replay simulator",
     "prop firm risk calculator",
     "Fair Value Gap",
     "Order Block",
     "Liquidity Sweep",
-    "Silver Bullet trading",
     "trading psychology tracker",
     "prop firm evaluation",
     "zero-G trading terminal",
@@ -56,9 +54,9 @@ export const metadata: Metadata = {
     canonical: "https://synapses-investments.vercel.app",
   },
   openGraph: {
-    title: "Synapses Investments | Institutional Trading Terminal & ICT/SMC Journal",
+    title: "Synapses Investments | Institutional Trading Terminal & Quantitative Journal",
     description:
-      "Institutional-grade execution analytics, ICT/SMC trade journaling, risk guardrails, and DMA telemetry engineered for serious prop operators.",
+      "Institutional-grade execution analytics, quantitative trade journaling, risk guardrails, and DMA telemetry engineered for serious prop operators.",
     url: "https://synapses-investments.vercel.app",
     siteName: "Synapses Investments",
     locale: "en_US",
@@ -76,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Synapses Investments | Institutional Trading Terminal",
     description:
-      "Institutional trading terminal, ICT & SMC trade journaling, dynamic position sizing, and DMA execution telemetry.",
+      "Institutional trading terminal, quantitative trade journaling, dynamic position sizing, and DMA execution telemetry.",
     images: ["/synapses-logo-v2.png"],
     creator: "@SynapsesInvest",
   },
@@ -148,7 +146,7 @@ const jsonLd = {
         priceCurrency: "USD",
       },
       description:
-        "The Algorithmic Execution Black Box: mechanical feedback terminal engineered to audit ICT/SMC confluences, track behavioral psychology, and quantify statistical edge.",
+        "The Algorithmic Execution Black Box: mechanical feedback terminal engineered to audit quantitative confluences, track behavioral psychology, and quantify statistical edge.",
     },
   ],
 };

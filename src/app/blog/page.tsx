@@ -14,21 +14,21 @@ import {
 export const metadata: Metadata = {
   title: "Terminal Intelligence & Institutional Research",
   description:
-    "High-signal research publications covering algorithmic liquidity delivery, Inner Circle Trader (ICT) concepts, risk-of-ruin mathematics, and trade psychology.",
+    "High-signal research publications covering algorithmic liquidity delivery, market microstructure, risk-of-ruin mathematics, and trade psychology.",
   alternates: {
     canonical: "https://synapses-investments.vercel.app/blog",
   },
   openGraph: {
     title: "Terminal Intelligence & Research | Synapses Investments",
     description:
-      "Algorithmic liquidity delivery, ICT/SMC mechanics, and risk-of-ruin mathematics.",
+      "Algorithmic liquidity delivery, market microstructure, and risk-of-ruin mathematics.",
     url: "https://synapses-investments.vercel.app/blog",
   },
 };
 
 const CATEGORIES: BlogCategory[] = [
   "All",
-  "ICT / SMC Mechanics",
+  "Market Microstructure & Order Flow",
   "Risk Management",
   "Trading Psychology",
   "Futures & Prop Protocols",
@@ -67,7 +67,7 @@ export default function BlogIndexPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            High-signal research publications covering algorithmic liquidity delivery, Inner Circle Trader (ICT) concepts, risk-of-ruin mathematics, and neurochemical trade psychology.
+            High-signal research publications covering algorithmic liquidity delivery, market microstructure, risk-of-ruin mathematics, and neurochemical trade psychology.
           </p>
         </section>
 

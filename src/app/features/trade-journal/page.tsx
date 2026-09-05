@@ -17,15 +17,15 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "ICT & SMC Trade Journal | Algorithmic Execution Logging",
+  title: "Quantitative Trade Journal | Systematic Execution Logging",
   description:
-    "Institutional-grade trade logging terminal with ICT confluence tagging (FVG, Order Block, Liquidity Sweeps), session matrices, and multi-timeframe chart galleries.",
+    "Institutional-grade trade logging terminal with strategy confluence tagging (FVG, Order Block, Liquidity Sweeps), session matrices, and multi-timeframe chart galleries.",
   alternates: {
     canonical: "https://synapses-investments.vercel.app/features/trade-journal",
   },
   openGraph: {
-    title: "ICT & SMC Trade Journal | Synapses Investments",
-    description: "Audit execution precision, tag ICT confluences, and eliminate emotional trading leaks.",
+    title: "Quantitative Trade Journal | Synapses Investments",
+    description: "Audit execution precision, tag strategy confluences, and eliminate emotional trading leaks.",
     url: "https://synapses-investments.vercel.app/features/trade-journal",
   },
 };
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export default function TradeJournalFeaturePage() {
   const stats = [
     { label: "Execution Latency", value: "0.2ms", desc: "Local-First Persistence" },
-    { label: "ICT Confluences", value: "8 Models", desc: "FVG, OB, Sweeps, Breakers" },
+    { label: "Strategy Models", value: "Unlimited", desc: "Custom Playbook Rules" },
     { label: "Chart Storage", value: "100%", desc: "Client-Side Base64 Vault" },
     { label: "Timeframe Support", value: "1s to 1M", desc: "Sub-Second Precision" },
   ];
@@ -42,11 +42,11 @@ export default function TradeJournalFeaturePage() {
     {
       icon: <Clock className="w-5 h-5 text-white" />,
       title: "Automatic Session Classification",
-      desc: "Instant alignment with London Open (Judas swings), NY AM macro windows, NY PM power hours, and Asian consolidation ranges.",
+      desc: "Instant alignment with London Open, NY AM macro windows, NY PM power hours, and Asian consolidation ranges.",
     },
     {
       icon: <Shield className="w-5 h-5 text-emerald-400" />,
-      title: "Smart Money Confluence Stacking",
+      title: "Quantitative Confluence Stacking",
       desc: "Tag Fair Value Gaps, Liquidity Sweeps, Market Structure Shifts (MSS), and Order Block mitigations with a single click.",
     },
     {
@@ -64,9 +64,9 @@ export default function TradeJournalFeaturePage() {
   return (
     <FeatureLayout
       badge="Trade Journal & Playbook"
-      title="Precision Trade Logging Engineered for ICT & SMC"
-      tagline="Precision Trade Logging Engineered for ICT & Smart Money Concepts."
-      description="Ditch fragmented spreadsheets and clunky logging tools. Synapses Trade Journal is an institutional-grade playbook designed specifically for traders executing algorithmic liquidity models and Smart Money Concepts."
+      title="Precision Trade Logging Engineered for Quantitative Traders"
+      tagline="Precision Trade Logging Engineered for Systematic Execution Models."
+      description="Ditch fragmented spreadsheets and clunky logging tools. Synapses Trade Journal is an institutional-grade playbook designed specifically for traders executing systematic liquidity models and proprietary setups."
       primaryCtaText="Launch Live Journal Engine"
       primaryCtaHref="/dashboard/journal"
       stats={stats}
@@ -95,12 +95,12 @@ export default function TradeJournalFeaturePage() {
               </span>
             </div>
             <div className="text-xs font-mono text-zinc-400 space-y-1">
-              <div>Setup: <span className="text-white">ICT Silver Bullet</span></div>
-              <div>Session: <span className="text-white">NY AM Macro (10:00 - 11:00)</span></div>
+              <div>Setup: <span className="text-white">Macro Range Expansion</span></div>
+              <div>Session: <span className="text-white">NY AM Session (10:00 - 11:00)</span></div>
               <div>Confluences: <span className="text-emerald-400">FVG • MSS • Prev Day High Sweep</span></div>
             </div>
             <p className="text-xs text-zinc-400 italic bg-black/50 p-2.5 rounded-xl border border-white/5 font-sans">
-              &ldquo;Classic Judas swing into 5m discount FVG. Filled at exact tick with zero drawdown.&rdquo;
+              &ldquo;Classic liquidity sweep into 5m discount FVG. Filled at exact tick with zero drawdown.&rdquo;
             </p>
           </div>
 

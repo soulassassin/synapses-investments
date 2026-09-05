@@ -50,7 +50,7 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
       type: "article",
       publishedTime: post.publishedAt,
       authors: [post.author.name],
-      tags: [post.category, "ICT", "SMC", "Order Flow", "Quantitative Trading"],
+      tags: [post.category, "Price Action", "Order Flow", "Market Microstructure", "Quantitative Trading"],
       images: [
         {
           url: "/synapses-logo-v2.png",

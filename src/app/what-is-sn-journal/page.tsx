@@ -22,7 +22,7 @@ import {
 export const metadata: Metadata = {
   title: "What is Synapses Journal? | The Algorithmic Execution Black Box",
   description:
-    "Discover Synapses Journal: not a passive spreadsheet, but a mechanical feedback terminal engineered to audit ICT/SMC confluences, track behavioral psychology, and eliminate emotional trading leaks.",
+    "Discover Synapses Journal: not a passive spreadsheet, but a mechanical feedback terminal engineered to audit strategy confluences, track behavioral psychology, and eliminate emotional trading leaks.",
   alternates: {
     canonical: "https://synapses-investments.vercel.app/what-is-sn-journal",
   },
@@ -58,7 +58,7 @@ export default function WhatIsSnJournalPage() {
       notes: "Auto-computed live as entry, SL, and TP are keyed in",
     },
     {
-      feature: "Pre-Built ICT & Smart Money Array Tagging",
+      feature: "Custom Playbook & Quantitative Array Tagging",
       excel: false,
       notion: "Manual tagging",
       synapses: true,
@@ -268,7 +268,7 @@ export default function WhatIsSnJournalPage() {
             STOP TRADING BLIND. START QUANTIFYING YOUR EDGE.
           </h2>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto">
-            Open the live trade journal terminal and record your next execution with instant ICT confluences, automatic R:R metrics, and screenshot vaulting.
+            Open the live trade journal terminal and record your next execution with instant strategy confluences, automatic R:R metrics, and screenshot vaulting.
           </p>
           <div className="flex justify-center gap-3">
             <Link href="/dashboard/journal">

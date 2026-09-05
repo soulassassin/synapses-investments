@@ -119,7 +119,7 @@ export function FeatureLayout({
             EXPERIENCE THE SYNAPSES ADVANTAGE TODAY
           </h2>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto">
-            Zero latency, institutional risk guardrails, and automated ICT/SMC playbook classification. Ready to execute?
+            Zero latency, institutional risk guardrails, and automated quantitative playbook classification. Ready to execute?
           </p>
           <div className="flex justify-center gap-3">
             <Link href="/dashboard">

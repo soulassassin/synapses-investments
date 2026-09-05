@@ -331,7 +331,7 @@ export default function LoginPage() {
                 <span>
                   {authMode === "SIGN_IN"
                     ? "Remember Terminal Session"
-                    : "Agree to ICT Execution Standards"}
+                    : "Agree to Execution Standards"}
                 </span>
               </label>
               <span className="text-[11px] font-mono text-white">SSL Encrypted</span>

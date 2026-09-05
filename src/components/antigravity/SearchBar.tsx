@@ -13,7 +13,7 @@ export function SearchBar() {
   const suggestions = [
     { text: "Launch Synapses Journal Terminal", route: "/dashboard", icon: <TrendingUp className="w-4 h-4 text-white" /> },
     { text: "Institutional Broker Gateway (MT5, cTrader, IBKR)", route: "/login", icon: <Activity className="w-4 h-4 text-zinc-300" /> },
-    { text: "NAS100 ICT Silver Bullet Backtesting Replay", route: "/dashboard/backtesting", icon: <Sparkles className="w-4 h-4 text-white" /> },
+    { text: "NAS100 Range Expansion Backtesting Replay", route: "/dashboard/backtesting", icon: <Sparkles className="w-4 h-4 text-white" /> },
     { text: "Trade Journal & Psychology Mistake Tracker", route: "/dashboard/journal", icon: <TrendingUp className="w-4 h-4 text-zinc-300" /> },
     { text: "Dynamic Position Sizing & Risk Calculator", route: "/dashboard/calculator", icon: <Activity className="w-4 h-4 text-white" /> },
   ];

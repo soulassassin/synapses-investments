@@ -47,7 +47,7 @@ const INITIAL_TRADES: DemoTrade[] = [
     asset: "NAS100",
     direction: "LONG",
     session: "NY AM",
-    setupTag: "NY AM Silver Bullet (5m FVG)",
+    setupTag: "NY AM Macro Imbalance (5m FVG)",
     entryPrice: 19820.0,
     stopLoss: 19780.0,
     takeProfit: 19948.0,
@@ -56,7 +56,7 @@ const INITIAL_TRADES: DemoTrade[] = [
     pnlDollar: 3200,
     outcome: "WIN",
     timestamp: "10:15 EST • Today",
-    notes: "Clean 5m BISI mitigation inside NY AM killzone window following 15m MSS liquidity sweep.",
+    notes: "Clean 5m BISI mitigation inside NY AM session window following 15m MSS liquidity sweep.",
     emotionalState: "High Conviction",
   },
   {
@@ -430,7 +430,7 @@ export function InteractiveDemo() {
             <tr className="border-b border-white/10 bg-white/[0.02] text-[11px] text-zinc-400 uppercase tracking-wider">
               <th className="p-3.5 pl-5">ASSET / DIRECTION</th>
               <th className="p-3.5">SESSION</th>
-              <th className="p-3.5">SMC CONFLUENCE / SETUP</th>
+              <th className="p-3.5">STRATEGY CONFLUENCE / SETUP</th>
               <th className="p-3.5">ENTRY / SL / TP</th>
               <th className="p-3.5 text-center">PLANNED R:R</th>
               <th className="p-3.5 text-right">RETURN</th>
@@ -675,7 +675,7 @@ export function InteractiveDemo() {
 
                 <div>
                   <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
-                    SMC SETUP TAG
+                    STRATEGY SETUP MODEL
                   </label>
                   <select
                     value={formSetupTag}
@@ -683,11 +683,11 @@ export function InteractiveDemo() {
                     className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                   >
                     <option value="Fair Value Gap (FVG)">Fair Value Gap (FVG / BISI / SIBI)</option>
-                    <option value="NY AM Silver Bullet">NY AM Silver Bullet Model</option>
+                    <option value="Macro Range Expansion">Macro Range Expansion</option>
                     <option value="Liquidity Sweep Reversal">Buy-Side / Sell-Side Sweep</option>
                     <option value="Order Block Mitigation">Institutional Order Block (OB)</option>
                     <option value="Breaker Block Shift">Breaker Block Structure Shift</option>
-                    <option value="Judas Swing Trap">London Open Judas Swing Trap</option>
+                    <option value="Session Open Expansion">Session Open Volatility Expansion</option>
                   </select>
                 </div>
               </div>

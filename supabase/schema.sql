@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- SYNAPSES INVESTMENTS: POSTGRESQL SUPABASE SCHEMA
--- Institutional Trading Terminal, ICT/SMC Journal & Quantitative Analytics
+-- Institutional Trading Terminal, Execution Journal & Quantitative Analytics
 -- ==============================================================================
 
 -- 1. Create Profiles Table (Linked to auth.users)
