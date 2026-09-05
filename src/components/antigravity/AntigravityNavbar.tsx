@@ -38,19 +38,19 @@ export function AntigravityNavbar() {
 
   const navLinks = [
     { name: "About", href: "/about", desc: "Institutional philosophy & edge", icon: <History className="w-4 h-4" /> },
-    { name: "Intelligence", href: "/blog", desc: "High-signal research & setups", icon: <Layers className="w-4 h-4" /> },
-    { name: "Journal", href: "/dashboard/journal", desc: "ICT / SMC execution logging", icon: <BookOpen className="w-4 h-4" /> },
-    { name: "Manifesto", href: "/what-is-sn-journal", desc: "Why mechanical feedback wins", icon: <TrendingUp className="w-4 h-4" /> },
-    { name: "Risk Calculator", href: "/dashboard/calculator", desc: "Lot sizing & stop-loss bounds", icon: <Calculator className="w-4 h-4" /> },
+    { name: "Intelligence", href: "/intelligence", desc: "Quantitative research & models", icon: <Layers className="w-4 h-4" /> },
+    { name: "Journal", href: "/journal", desc: "Execution black box & live demo", icon: <BookOpen className="w-4 h-4" /> },
+    { name: "Manifesto", href: "/manifesto", desc: "The quantitative doctrine", icon: <TrendingUp className="w-4 h-4" /> },
+    { name: "Risk Calculator", href: "/risk-calculator", desc: "Dynamic position guardrails", icon: <Calculator className="w-4 h-4" /> },
   ];
 
   const apps = [
-    { name: "About Synapses", desc: "Zero-G Thesis & Vision", href: "/about", icon: <History className="w-5 h-5 text-zinc-300" /> },
+    { name: "About Synapses", desc: "Prop Firm Architecture", href: "/about", icon: <History className="w-5 h-5 text-zinc-300" /> },
     { name: "Broker Gateway", desc: "Live MT5/cTrader Sync", href: "/login", icon: <Zap className="w-5 h-5 text-zinc-300" /> },
-    { name: "Intelligence", desc: "Research & Order Flow", href: "/blog", icon: <Layers className="w-5 h-5 text-white" /> },
-    { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/dashboard/calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
-    { name: "SN Manifesto", desc: "Mechanical Execution", href: "/what-is-sn-journal", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
-    { name: "Trade Journal", desc: "ICT & SMC Playbook", href: "/dashboard/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
+    { name: "Intelligence", desc: "Quant Lab & Research", href: "/intelligence", icon: <Layers className="w-5 h-5 text-white" /> },
+    { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/risk-calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
+    { name: "SN Manifesto", desc: "Mechanical Doctrine", href: "/manifesto", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
+    { name: "Trade Journal", desc: "Live Interactive Demo", href: "/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
   ];
 
   return (

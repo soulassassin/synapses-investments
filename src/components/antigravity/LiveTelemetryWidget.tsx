@@ -4,9 +4,11 @@ import React, { useState, useEffect } from "react";
 import { GlassCard } from "../glass/GlassCard";
 import { Cpu, Radio } from "lucide-react";
 import { useGravity } from "@/context/GravityContext";
+import { useDMA } from "@/context/DMAContext";
 
 export function LiveTelemetryWidget() {
   const { isZeroG } = useGravity();
+  const { latencyMs, status } = useDMA();
   const [tps, setTps] = useState(4892);
   const [time, setTime] = useState("");
 
@@ -34,8 +36,8 @@ export function LiveTelemetryWidget() {
           <Cpu className="w-3.5 h-3.5 text-white" />
           <span className="text-[11px] font-bold text-white tracking-wider">TELEMETRY</span>
         </div>
-        <span className="flex items-center gap-1 text-[9px] font-mono text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/15">
-          <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-400" /> 99.99% UP
+        <span className="flex items-center gap-1 text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+          <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-400" /> {status === "STREAMING" ? "LIVE DMA" : "99.99% UP"}
         </span>
       </div>
 
@@ -54,7 +56,9 @@ export function LiveTelemetryWidget() {
 
         <div className="bg-white/[0.03] p-1.5 rounded-lg border border-white/5">
           <span className="text-[9px] text-zinc-500 block">DMA LATENCY</span>
-          <span className="text-[11px] font-bold text-white">2.4ms DMA</span>
+          <span className="text-[11px] font-bold text-emerald-400 font-mono">
+            {latencyMs.toFixed(1)}ms DMA
+          </span>
         </div>
 
         <div className="bg-white/[0.03] p-1.5 rounded-lg border border-white/5">

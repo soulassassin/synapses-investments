@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -41,6 +41,8 @@ interface AuthContextType {
     password: string,
     fullName?: string
   ) => Promise<{ error: string | null; needsEmailVerification?: boolean }>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
+  signInWithApple: () => Promise<{ error: string | null }>;
   signInWithGitHub: () => Promise<{ error: string | null }>;
   signInDemoUser: () => void;
   signOut: () => Promise<void>;
@@ -71,20 +73,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<TraderProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const supabase = createClient();
+  const restoreLocalAuth = useCallback(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const savedAuth = localStorage.getItem(LOCAL_STORAGE_AUTH_KEY);
+        if (savedAuth) {
+          const parsed = JSON.parse(savedAuth);
+          setUser(parsed.user);
+          setProfile(parsed.profile);
+        }
+      }
+    } catch (err) {
+      console.warn("Local auth restore error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const supabase = createClient();
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!error && data) {
+        setProfile(data as TraderProfile);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch profile from Supabase:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // 1. If Supabase is configured, listen to real Auth events
+    const supabase = createClient();
+
+    // 1. If Supabase is configured and client created
     if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchProfile(session.user.id);
-        } else {
-          setIsLoading(false);
-        }
-      });
+      supabase.auth
+        .getSession()
+        .then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            fetchProfile(session.user.id);
+          } else {
+            setIsLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.warn("Supabase auth session error, falling back to local storage:", err);
+          restoreLocalAuth();
+        });
 
       const {
         data: { subscription },
@@ -104,46 +149,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     } else {
       // 2. Fallback local demo/persisted session
-      try {
-        const savedAuth = localStorage.getItem(LOCAL_STORAGE_AUTH_KEY);
-        if (savedAuth) {
-          const parsed = JSON.parse(savedAuth);
-          setUser(parsed.user);
-          setProfile(parsed.profile);
-        }
-      } catch (err) {
-        console.error("Local auth restore error:", err);
-      }
-      setIsLoading(false);
+      restoreLocalAuth();
     }
-  }, []);
-
-  const fetchProfile = async (userId: string) => {
-    if (!supabase) return;
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (!error && data) {
-        setProfile(data as TraderProfile);
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [fetchProfile, restoreLocalAuth]);
 
   const signInWithEmail = async (email: string, password: string) => {
+    const supabase = createClient();
     if (supabase) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return { error: error?.message ?? null };
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        return { error: error?.message ?? null };
+      } catch (err: any) {
+        return { error: err?.message || "Authentication failed" };
+      }
     }
 
     // Local sandbox simulation
@@ -166,10 +187,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(mockUser);
     setProfile(mockProfile);
-    localStorage.setItem(
-      LOCAL_STORAGE_AUTH_KEY,
-      JSON.stringify({ user: mockUser, profile: mockProfile })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: mockProfile })
+      );
+    }
 
     return { error: null };
   };
@@ -179,20 +202,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     fullName?: string
   ) => {
+    const supabase = createClient();
     if (supabase) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            callsign: fullName?.replace(/\s+/g, "_").toUpperCase() || email.split("@")[0].toUpperCase(),
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              callsign: fullName?.replace(/\s+/g, "_").toUpperCase() || email.split("@")[0].toUpperCase(),
+            },
           },
-        },
-      });
+        });
 
-      const needsEmailVerification = Boolean(data.user && !data.session);
-      return { error: error?.message ?? null, needsEmailVerification };
+        const needsEmailVerification = Boolean(data.user && !data.session);
+        return { error: error?.message ?? null, needsEmailVerification };
+      } catch (err: any) {
+        return { error: err?.message || "Sign up failed", needsEmailVerification: false };
+      }
     }
 
     // Local sandbox signup
@@ -211,28 +239,111 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       full_name: fullName || email.split("@")[0],
       callsign: fullName?.replace(/\s+/g, "_").toUpperCase() || email.split("@")[0].toUpperCase(),
-      has_completed_onboarding: false, // will direct to onboarding!
+      has_completed_onboarding: false,
     };
 
     setUser(mockUser);
     setProfile(mockProfile);
-    localStorage.setItem(
-      LOCAL_STORAGE_AUTH_KEY,
-      JSON.stringify({ user: mockUser, profile: mockProfile })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: mockProfile })
+      );
+    }
 
     return { error: null, needsEmailVerification: false };
   };
 
+  const signInWithGoogle = async () => {
+    const supabase = createClient();
+    if (supabase && typeof window !== "undefined") {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          },
+        });
+        return { error: error?.message ?? null };
+      } catch (err: any) {
+        return { error: err?.message || "Google sign-in failed" };
+      }
+    }
+
+    // Local sandbox simulation for Google login
+    const mockUser = {
+      id: "google-user-" + Date.now(),
+      email: "trader.google@synapsesinvestments.com",
+      app_metadata: { provider: "google" },
+      user_metadata: { full_name: "Google Trader" },
+      aud: "authenticated",
+      created_at: new Date().toISOString(),
+    } as unknown as User;
+
+    setUser(mockUser);
+    setProfile(DEMO_PROFILE);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
+      );
+    }
+
+    return { error: null };
+  };
+
+  const signInWithApple = async () => {
+    const supabase = createClient();
+    if (supabase && typeof window !== "undefined") {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "apple",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          },
+        });
+        return { error: error?.message ?? null };
+      } catch (err: any) {
+        return { error: err?.message || "Apple sign-in failed" };
+      }
+    }
+
+    // Local sandbox simulation for Apple login
+    const mockUser = {
+      id: "apple-user-" + Date.now(),
+      email: "trader.apple@synapsesinvestments.com",
+      app_metadata: { provider: "apple" },
+      user_metadata: { full_name: "Apple Trader" },
+      aud: "authenticated",
+      created_at: new Date().toISOString(),
+    } as unknown as User;
+
+    setUser(mockUser);
+    setProfile(DEMO_PROFILE);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
+      );
+    }
+
+    return { error: null };
+  };
+
   const signInWithGitHub = async () => {
-    if (supabase) {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        },
-      });
-      return { error: error?.message ?? null };
+    const supabase = createClient();
+    if (supabase && typeof window !== "undefined") {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "github",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          },
+        });
+        return { error: error?.message ?? null };
+      } catch (err: any) {
+        return { error: err?.message || "GitHub sign-in failed" };
+      }
     }
 
     // Local sandbox simulation for GitHub login
@@ -247,10 +358,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(mockUser);
     setProfile(DEMO_PROFILE);
-    localStorage.setItem(
-      LOCAL_STORAGE_AUTH_KEY,
-      JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
+      );
+    }
 
     return { error: null };
   };
@@ -265,20 +378,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(mockUser);
     setProfile(DEMO_PROFILE);
-    localStorage.setItem(
-      LOCAL_STORAGE_AUTH_KEY,
-      JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user: mockUser, profile: DEMO_PROFILE })
+      );
+    }
   };
 
   const signOut = async () => {
+    const supabase = createClient();
     if (supabase) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn("SignOut exception:", e);
+      }
     }
     setUser(null);
     setSession(null);
     setProfile(null);
-    localStorage.removeItem(LOCAL_STORAGE_AUTH_KEY);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(LOCAL_STORAGE_AUTH_KEY);
+    }
   };
 
   const completeOnboarding = async (data: OnboardingData) => {
@@ -296,18 +418,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setProfile(updatedProfile);
 
+    const supabase = createClient();
     if (supabase && user) {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          email: user.email!,
-          ...data,
-          has_completed_onboarding: true,
-          updated_at: new Date().toISOString(),
-        });
-      if (error) return { error: error.message };
-    } else {
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            email: user.email!,
+            ...data,
+            has_completed_onboarding: true,
+            updated_at: new Date().toISOString(),
+          });
+        if (error) return { error: error.message };
+      } catch (err: any) {
+        return { error: err?.message || "Failed to save onboarding" };
+      }
+    } else if (typeof window !== "undefined") {
       localStorage.setItem(
         LOCAL_STORAGE_AUTH_KEY,
         JSON.stringify({ user, profile: updatedProfile })
@@ -327,6 +454,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isSupabaseLive: isSupabaseConfigured,
         signInWithEmail,
         signUpWithEmail,
+        signInWithGoogle,
+        signInWithApple,
         signInWithGitHub,
         signInDemoUser,
         signOut,

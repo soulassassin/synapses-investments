@@ -329,7 +329,15 @@ export const useJournalStore = create<JournalState>()(
     }),
     {
       name: 'synapses_journal_v1',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined"
+          ? localStorage
+          : {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+            }
+      ),
       partialize: (state) => ({ trades: state.trades }),
     }
   )

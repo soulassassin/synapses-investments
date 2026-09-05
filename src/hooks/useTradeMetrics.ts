@@ -19,6 +19,28 @@ export interface PnLPoint {
   tradeId: string;
 }
 
+const safeParseTime = (d: string | undefined): number => {
+  if (!d) return 0;
+  try {
+    const iso = d.includes("T") ? d : d.replace(" ", "T");
+    const t = new Date(iso).getTime();
+    return isNaN(t) ? 0 : t;
+  } catch {
+    return 0;
+  }
+};
+
+const safeGetDay = (d: string | undefined): number => {
+  if (!d) return 1;
+  try {
+    const iso = d.includes("T") ? d : d.replace(" ", "T");
+    const day = new Date(iso).getDay();
+    return isNaN(day) ? 1 : day;
+  } catch {
+    return 1;
+  }
+};
+
 export function useTradeMetrics(trades: Trade[]) {
   return useMemo(() => {
     if (!trades || trades.length === 0) {
@@ -58,9 +80,9 @@ export function useTradeMetrics(trades: Trade[]) {
       };
     }
 
-    // Sort trades chronologically
+    // Sort trades chronologically with safe date parser
     const sortedTrades = [...trades].sort(
-      (a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()
+      (a, b) => safeParseTime(a.entryDate) - safeParseTime(b.entryDate)
     );
 
     let grossProfit = 0;
@@ -86,7 +108,7 @@ export function useTradeMetrics(trades: Trade[]) {
 
     const pnlCurve: PnLPoint[] = [];
 
-    // Initialize point 0
+    // Initialize baseline point
     pnlCurve.push({
       date: "Start",
       ticker: "BASELINE",
@@ -100,11 +122,11 @@ export function useTradeMetrics(trades: Trade[]) {
     const returnsList: number[] = [];
 
     sortedTrades.forEach((trade) => {
-      const pnl = trade.netPnL;
+      const pnl = Number(trade.netPnL) || 0;
       netPnL += pnl;
       runningCumulative += pnl;
-      totalCommissions += (trade.commission || 0) + (trade.swap || 0);
-      totalR += trade.rMultiple || 0;
+      totalCommissions += (Number(trade.commission) || 0) + (Number(trade.swap) || 0);
+      totalR += Number(trade.rMultiple) || 0;
       returnsList.push(pnl);
 
       if (pnl > 0.01) {
@@ -137,20 +159,20 @@ export function useTradeMetrics(trades: Trade[]) {
       }
 
       pnlCurve.push({
-        date: trade.entryDate.split(" ")[0] || trade.entryDate,
-        ticker: trade.ticker,
+        date: (trade.entryDate || "").split(" ")[0] || trade.entryDate || "2026-09-01",
+        ticker: trade.ticker || "NAS100",
         tradePnL: pnl,
         cumulativePnL: runningCumulative,
         drawdown: dd,
-        rMultiple: trade.rMultiple || 0,
-        tradeId: trade.id,
+        rMultiple: Number(trade.rMultiple) || 0,
+        tradeId: trade.id || `TRD-${Date.now()}`,
       });
     });
 
     // Current streak
     if (sortedTrades.length > 0) {
       const lastTrade = sortedTrades[sortedTrades.length - 1];
-      if (lastTrade.netPnL >= 0) {
+      if ((Number(lastTrade.netPnL) || 0) >= 0) {
         currentStreakType = "WIN";
         currentStreakCount = tempWinStreak;
       } else {
@@ -169,7 +191,7 @@ export function useTradeMetrics(trades: Trade[]) {
     const expectancy = (winRate / 100) * avgWin - lossRate * avgLoss;
     const expectancyR = totalTrades > 0 ? totalR / totalTrades : 0;
 
-    // Sharpe calculation (annualized approximation based on trade return variance)
+    // Sharpe calculation (annualized approximation)
     let sharpeRatio = 0;
     if (returnsList.length > 1) {
       const meanReturn = netPnL / returnsList.length;
@@ -178,7 +200,6 @@ export function useTradeMetrics(trades: Trade[]) {
         (returnsList.length - 1);
       const stdDev = Math.sqrt(variance);
       if (stdDev > 0) {
-        // sqrt(252 trading days)
         sharpeRatio = Number(((meanReturn / stdDev) * Math.sqrt(252)).toFixed(2));
       }
     }
@@ -188,24 +209,24 @@ export function useTradeMetrics(trades: Trade[]) {
       winningTrades,
       losingTrades,
       breakevenTrades,
-      winRate: Number(winRate.toFixed(1)),
-      grossProfit: Number(grossProfit.toFixed(2)),
-      grossLoss: Number(grossLoss.toFixed(2)),
-      netPnL: Number(netPnL.toFixed(2)),
-      profitFactor: Number(profitFactor.toFixed(2)),
-      expectancy: Number(expectancy.toFixed(2)),
-      expectancyR: Number(expectancyR.toFixed(2)),
-      sharpeRatio,
-      avgWin: Number(avgWin.toFixed(2)),
-      avgLoss: Number(avgLoss.toFixed(2)),
-      avgWinLossRatio: Number(avgWinLossRatio.toFixed(2)),
-      maxDrawdownAmount: Number(maxDrawdownAmount.toFixed(2)),
-      maxDrawdownPercent: Number(maxDrawdownPercent.toFixed(1)),
+      winRate: isNaN(winRate) ? 0 : Number(winRate.toFixed(1)),
+      grossProfit: isNaN(grossProfit) ? 0 : Number(grossProfit.toFixed(2)),
+      grossLoss: isNaN(grossLoss) ? 0 : Number(grossLoss.toFixed(2)),
+      netPnL: isNaN(netPnL) ? 0 : Number(netPnL.toFixed(2)),
+      profitFactor: isNaN(profitFactor) ? 0 : Number(profitFactor.toFixed(2)),
+      expectancy: isNaN(expectancy) ? 0 : Number(expectancy.toFixed(2)),
+      expectancyR: isNaN(expectancyR) ? 0 : Number(expectancyR.toFixed(2)),
+      sharpeRatio: isNaN(sharpeRatio) ? 0 : sharpeRatio,
+      avgWin: isNaN(avgWin) ? 0 : Number(avgWin.toFixed(2)),
+      avgLoss: isNaN(avgLoss) ? 0 : Number(avgLoss.toFixed(2)),
+      avgWinLossRatio: isNaN(avgWinLossRatio) ? 0 : Number(avgWinLossRatio.toFixed(2)),
+      maxDrawdownAmount: isNaN(maxDrawdownAmount) ? 0 : Number(maxDrawdownAmount.toFixed(2)),
+      maxDrawdownPercent: isNaN(maxDrawdownPercent) ? 0 : Number(maxDrawdownPercent.toFixed(1)),
       currentStreak: { type: currentStreakType, count: currentStreakCount },
       maxWinStreak,
       maxLossStreak,
       avgHoldTimeMinutes: 85,
-      totalCommissions: Number(totalCommissions.toFixed(2)),
+      totalCommissions: isNaN(totalCommissions) ? 0 : Number(totalCommissions.toFixed(2)),
     };
 
     // Day of week stats
@@ -218,11 +239,12 @@ export function useTradeMetrics(trades: Trade[]) {
     };
 
     sortedTrades.forEach((t) => {
-      const d = new Date(t.entryDate).getDay();
+      const d = safeGetDay(t.entryDate);
       if (daysMap[d]) {
-        daysMap[d].pnl += t.netPnL;
+        const p = Number(t.netPnL) || 0;
+        daysMap[d].pnl += p;
         daysMap[d].trades += 1;
-        if (t.netPnL > 0) daysMap[d].wins += 1;
+        if (p > 0) daysMap[d].wins += 1;
       }
     });
 
@@ -243,14 +265,16 @@ export function useTradeMetrics(trades: Trade[]) {
     };
 
     sortedTrades.forEach((t) => {
-      if (sessionMap[t.session]) {
-        sessionMap[t.session].pnl += t.netPnL;
-        sessionMap[t.session].trades += 1;
-        if (t.netPnL > 0) {
-          sessionMap[t.session].wins += 1;
-          sessionMap[t.session].grossWin += t.netPnL;
+      const sess = t.session || "New York";
+      if (sessionMap[sess]) {
+        const p = Number(t.netPnL) || 0;
+        sessionMap[sess].pnl += p;
+        sessionMap[sess].trades += 1;
+        if (p > 0) {
+          sessionMap[sess].wins += 1;
+          sessionMap[sess].grossWin += p;
         } else {
-          sessionMap[t.session].grossLoss += Math.abs(t.netPnL);
+          sessionMap[sess].grossLoss += Math.abs(p);
         }
       }
     });
@@ -272,11 +296,14 @@ export function useTradeMetrics(trades: Trade[]) {
     };
 
     sortedTrades.forEach((t) => {
-      if (assetMap[t.assetClass]) {
-        assetMap[t.assetClass].pnl += t.netPnL;
-        assetMap[t.assetClass].trades += 1;
-        if (t.netPnL > 0) assetMap[t.assetClass].wins += 1;
-        assetMap[t.assetClass].tickers[t.ticker] = (assetMap[t.assetClass].tickers[t.ticker] || 0) + 1;
+      const asset = t.assetClass || "Indices";
+      if (assetMap[asset]) {
+        const p = Number(t.netPnL) || 0;
+        assetMap[asset].pnl += p;
+        assetMap[asset].trades += 1;
+        if (p > 0) assetMap[asset].wins += 1;
+        const sym = t.ticker || "UNKNOWN";
+        assetMap[asset].tickers[sym] = (assetMap[asset].tickers[sym] || 0) + 1;
       }
     });
 
@@ -303,10 +330,12 @@ export function useTradeMetrics(trades: Trade[]) {
     sortedTrades.forEach((t) => {
       const s = t.setup || "Other";
       if (!setupMap[s]) setupMap[s] = { trades: 0, wins: 0, pnl: 0, totalR: 0 };
+      const p = Number(t.netPnL) || 0;
+      const r = Number(t.rMultiple) || 0;
       setupMap[s].trades += 1;
-      setupMap[s].pnl += t.netPnL;
-      setupMap[s].totalR += t.rMultiple || 0;
-      if (t.netPnL > 0) setupMap[s].wins += 1;
+      setupMap[s].pnl += p;
+      setupMap[s].totalR += r;
+      if (p > 0) setupMap[s].wins += 1;
     });
 
     const setupStats: SetupStat[] = Object.entries(setupMap).map(([setup, data]) => ({
@@ -314,18 +343,19 @@ export function useTradeMetrics(trades: Trade[]) {
       trades: data.trades,
       winRate: Number(((data.wins / data.trades) * 100).toFixed(1)),
       netPnL: Number(data.pnl.toFixed(2)),
-      avgR: Number((data.totalR / data.trades).toFixed(2)),
+      avgR: data.trades > 0 ? Number((data.totalR / data.trades).toFixed(2)) : 0,
     }));
 
     // Mistake stats
     const mistakeMap: Record<string, { count: number; loss: number }> = {};
     sortedTrades.forEach((t) => {
-      if (t.mistakeTags && t.mistakeTags.length > 0) {
+      const p = Number(t.netPnL) || 0;
+      if (t.mistakeTags && Array.isArray(t.mistakeTags) && t.mistakeTags.length > 0) {
         t.mistakeTags.forEach((tag) => {
           if (!mistakeMap[tag]) mistakeMap[tag] = { count: 0, loss: 0 };
           mistakeMap[tag].count += 1;
-          if (t.netPnL < 0) {
-            mistakeMap[tag].loss += Math.abs(t.netPnL);
+          if (p < 0) {
+            mistakeMap[tag].loss += Math.abs(p);
           }
         });
       }

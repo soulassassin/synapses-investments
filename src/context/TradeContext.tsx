@@ -55,16 +55,59 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from LocalStorage (with legacy key fallback)
+  // Load from LocalStorage (with legacy key fallback & safe sanitization)
   useEffect(() => {
     try {
-      const savedTrades = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem("synapses_tradezilla_trades_v1");
-      if (savedTrades) {
-        setTrades(JSON.parse(savedTrades));
-      }
-      const savedAccounts = localStorage.getItem(LOCAL_STORAGE_ACCOUNTS_KEY) || localStorage.getItem("synapses_tradezilla_accounts_v1");
-      if (savedAccounts) {
-        setBrokerAccounts(JSON.parse(savedAccounts));
+      if (typeof window !== "undefined") {
+        const savedTrades = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem("synapses_tradezilla_trades_v1");
+        if (savedTrades) {
+          const parsed = JSON.parse(savedTrades);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const sanitized: Trade[] = parsed.map((t: any, idx: number) => ({
+              id: t.id || `TRD-RESTORED-${idx}`,
+              ticker: t.ticker || "NAS100",
+              assetClass: t.assetClass || "Indices",
+              direction: t.direction || "LONG",
+              entryDate: t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
+              exitDate: t.exitDate || t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
+              session: t.session || "New York",
+              entryPrice: Number(t.entryPrice) || 0,
+              exitPrice: Number(t.exitPrice) || 0,
+              stopLoss: Number(t.stopLoss) || 0,
+              takeProfit: t.takeProfit !== undefined ? Number(t.takeProfit) : undefined,
+              positionSize: Number(t.positionSize) || 1,
+              grossPnL: Number(t.grossPnL) || 0,
+              netPnL: Number(t.netPnL) || 0,
+              commission: Number(t.commission) || 0,
+              swap: Number(t.swap) || 0,
+              slippagePips: Number(t.slippagePips) || 0,
+              spreadPips: Number(t.spreadPips) || 0,
+              rMultiple: Number(t.rMultiple) || 0,
+              strategy: t.strategy || "ICT Silver Bullet",
+              setup: t.setup || "Fair Value Gap",
+              mistakeTags: Array.isArray(t.mistakeTags) ? t.mistakeTags : [],
+              marketCondition: t.marketCondition || "Trending Bullish",
+              emotion: t.emotion || {
+                confidence: 5,
+                stress: 1,
+                discipline: 5,
+                preTradeState: "Focused",
+                postTradeState: "Satisfied",
+              },
+              timeframe: t.timeframe || "5m",
+              notes: t.notes || "",
+              account: t.account || "Apex Prop 100K Fund",
+            }));
+            setTrades(sanitized);
+          }
+        }
+        const savedAccounts = localStorage.getItem(LOCAL_STORAGE_ACCOUNTS_KEY) || localStorage.getItem("synapses_tradezilla_accounts_v1");
+        if (savedAccounts) {
+          const parsedAccs = JSON.parse(savedAccounts);
+          if (Array.isArray(parsedAccs) && parsedAccs.length > 0) {
+            setBrokerAccounts(parsedAccs);
+          }
+        }
       }
     } catch (e) {
       console.warn("Could not load from localStorage", e);
@@ -74,7 +117,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   // Save to LocalStorage
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && typeof window !== "undefined") {
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trades));
       } catch (e) {
@@ -84,7 +127,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   }, [trades, isLoaded]);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && typeof window !== "undefined") {
       try {
         localStorage.setItem(LOCAL_STORAGE_ACCOUNTS_KEY, JSON.stringify(brokerAccounts));
       } catch (e) {
@@ -278,8 +321,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         }
       }
       if (filters.outcome && filters.outcome !== "ALL") {
-        if (filters.outcome === "WIN" && trade.netPnL <= 0) return false;
-        if (filters.outcome === "LOSS" && trade.netPnL >= 0) return false;
+        if (filters.outcome === "WIN" && (Number(trade.netPnL) || 0) <= 0) return false;
+        if (filters.outcome === "LOSS" && (Number(trade.netPnL) || 0) >= 0) return false;
       }
       return true;
     });

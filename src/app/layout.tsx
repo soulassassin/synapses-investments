@@ -153,6 +153,8 @@ const jsonLd = {
   ],
 };
 
+import { DMAProvider } from "@/context/DMAContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -186,7 +188,9 @@ export default function RootLayout({
         <AuthProvider>
           <GravityProvider>
             <TradeProvider>
-              <div className="relative z-10">{children}</div>
+              <DMAProvider>
+                <div className="relative z-10">{children}</div>
+              </DMAProvider>
             </TradeProvider>
           </GravityProvider>
         </AuthProvider>

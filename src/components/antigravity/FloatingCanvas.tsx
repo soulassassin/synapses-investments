@@ -10,6 +10,7 @@ import { QuickTradeCapsule } from "./QuickTradeCapsule";
 import { CryptoTickerCapsule } from "./CryptoTickerCapsule";
 import { LiveTelemetryWidget } from "./LiveTelemetryWidget";
 import { GravityController } from "./GravityController";
+import { ClientErrorBoundary } from "@/components/common/ClientErrorBoundary";
 import {
   Calendar,
   Terminal,
@@ -23,9 +24,14 @@ export function FloatingCanvas() {
     <div className="relative w-full min-h-screen overflow-hidden flex flex-col items-center justify-center pt-28 pb-20 px-4 select-none">
       {/* Center Fixed/Floating Search Hub */}
       <div className="relative z-20 flex flex-col items-center max-w-3xl w-full mx-auto my-auto text-center">
-        <NeonLogo />
+        <ClientErrorBoundary componentName="NeonLogo">
+          <NeonLogo />
+        </ClientErrorBoundary>
+
         <div className="w-full mt-7">
-          <SearchBar />
+          <ClientErrorBoundary componentName="SearchBar">
+            <SearchBar />
+          </ClientErrorBoundary>
         </div>
 
         {/* Mobile & Tablet Quick Launcher Grid (< lg) */}
@@ -113,7 +119,9 @@ export function FloatingCanvas() {
         delay={0.2}
         className="hidden lg:block top-1/2 left-1/2"
       >
-        <QuickTradeCapsule />
+        <ClientErrorBoundary componentName="QuickTradeCapsule">
+          <QuickTradeCapsule />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Floating Orbiting Node 2: Crypto Ticker Capsule (Top Right) */}
@@ -125,7 +133,9 @@ export function FloatingCanvas() {
         delay={0.6}
         className="hidden lg:block top-1/2 left-1/2"
       >
-        <CryptoTickerCapsule />
+        <ClientErrorBoundary componentName="CryptoTickerCapsule">
+          <CryptoTickerCapsule />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Floating Orbiting Node 3: System Telemetry (Bottom Left) */}
@@ -137,7 +147,9 @@ export function FloatingCanvas() {
         delay={1.2}
         className="hidden lg:block top-1/2 left-1/2"
       >
-        <LiveTelemetryWidget />
+        <ClientErrorBoundary componentName="LiveTelemetryWidget">
+          <LiveTelemetryWidget />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Floating Orbiting Node 4: Trade Journal Playbook (Bottom Right) */}
@@ -149,15 +161,17 @@ export function FloatingCanvas() {
         delay={1.8}
         className="hidden lg:block top-1/2 left-1/2"
       >
-        <AppCapsule
-          title="Trade Journal & Playbook"
-          subtitle="ICT & SMC Visual Logger"
-          icon={<Brain className="w-5 h-5 text-white" />}
-          href="/dashboard/journal"
-          badge="ALPHA LOGS"
-          badgeColor="white"
-          statusColor="bg-white"
-        />
+        <ClientErrorBoundary componentName="AppCapsuleJournal">
+          <AppCapsule
+            title="Trade Journal & Playbook"
+            subtitle="ICT & SMC Visual Logger"
+            icon={<Brain className="w-5 h-5 text-white" />}
+            href="/dashboard/journal"
+            badge="ALPHA LOGS"
+            badgeColor="white"
+            statusColor="bg-white"
+          />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Floating Orbiting Node 5: Market Replay Simulator (Far Right Center) */}
@@ -169,15 +183,17 @@ export function FloatingCanvas() {
         delay={2.2}
         className="hidden xl:block top-1/2 left-1/2"
       >
-        <AppCapsule
-          title="Bar-by-Bar Replay"
-          subtitle="Tick Simulator Engine"
-          icon={<Terminal className="w-5 h-5 text-white" />}
-          href="/dashboard/backtesting"
-          badge="10x SPEED"
-          badgeColor="white"
-          statusColor="bg-white"
-        />
+        <ClientErrorBoundary componentName="AppCapsuleReplay">
+          <AppCapsule
+            title="Bar-by-Bar Replay"
+            subtitle="Tick Simulator Engine"
+            icon={<Terminal className="w-5 h-5 text-white" />}
+            href="/dashboard/backtesting"
+            badge="10x SPEED"
+            badgeColor="white"
+            statusColor="bg-white"
+          />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Floating Orbiting Node 6: Risk Calculator (Far Left Center) */}
@@ -189,19 +205,23 @@ export function FloatingCanvas() {
         delay={2.5}
         className="hidden xl:block top-1/2 left-1/2"
       >
-        <AppCapsule
-          title="Dynamic Lot Sizer"
-          subtitle="Pre-Trade Guardrails"
-          icon={<Cpu className="w-5 h-5 text-white" />}
-          href="/dashboard/calculator"
-          badge="1.0% RISK"
-          badgeColor="white"
-          statusColor="bg-white"
-        />
+        <ClientErrorBoundary componentName="AppCapsuleCalculator">
+          <AppCapsule
+            title="Dynamic Lot Sizer"
+            subtitle="Pre-Trade Guardrails"
+            icon={<Cpu className="w-5 h-5 text-white" />}
+            href="/dashboard/calculator"
+            badge="1.0% RISK"
+            badgeColor="white"
+            statusColor="bg-white"
+          />
+        </ClientErrorBoundary>
       </DraggableNode>
 
       {/* Bottom Right Gravity Controller Dock */}
-      <GravityController />
+      <ClientErrorBoundary componentName="GravityController">
+        <GravityController />
+      </ClientErrorBoundary>
     </div>
   );
 }

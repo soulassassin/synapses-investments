@@ -1,6 +1,5 @@
 import React from "react";
 import { clsx } from "clsx";
-import { LOGO_WHITE_BASE64, LOGO_BLACK_BASE64 } from "./logoData";
 
 interface SynapsesLogoProps {
   variant?: "horizontal" | "stacked" | "icon";

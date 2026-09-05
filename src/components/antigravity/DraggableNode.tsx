@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, PanInfo } from "framer-motion";
 import { useGravity } from "@/context/GravityContext";
 
@@ -26,6 +26,11 @@ export function DraggableNode({
   onDragEnd,
 }: DraggableNodeProps) {
   const { isZeroG, gravityMode, impulseTrigger } = useGravity();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Floating zero-G drift maintains offset at initialX & initialY
   const driftVariants = {
@@ -82,6 +87,19 @@ export function DraggableNode({
   };
 
   const currentVariant = isZeroG ? "zeroG" : gravityMode === "LUNAR" ? "lunar" : "surfaceGravity";
+
+  if (!mounted) {
+    return (
+      <div
+        style={{
+          transform: `translate3d(${initialX}px, ${initialY}px, 0px)`,
+        }}
+        className={`select-none absolute touch-none z-10 ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
 
   return (
     <motion.div

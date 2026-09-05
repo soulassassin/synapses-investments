@@ -14,15 +14,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/what-is-sn-journal`,
+      url: `${baseUrl}/journal`,
       lastModified: currentDate,
-      changeFrequency: "weekly" as const,
-      priority: 0.95,
+      changeFrequency: "daily" as const,
+      priority: 0.98,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,
       changeFrequency: "monthly" as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/intelligence`,
+      lastModified: currentDate,
+      changeFrequency: "weekly" as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/manifesto`,
+      lastModified: currentDate,
+      changeFrequency: "monthly" as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/risk-calculator`,
+      lastModified: currentDate,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/what-is-sn-journal`,
+      lastModified: currentDate,
+      changeFrequency: "weekly" as const,
       priority: 0.9,
     },
     {
