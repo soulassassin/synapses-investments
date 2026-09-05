@@ -18,3 +18,6 @@ export function useDMA(): DMAFeedState {
   }
   return context;
 }
+
+export const useDMAContext = useDMA;
+
