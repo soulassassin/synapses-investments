@@ -43,7 +43,7 @@ const DEFAULT_SETUPS = [
 
 export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryProps) {
   const { getTicker } = useDMAContext();
-  const { addTrade, brokerAccounts, playbookStrategies } = useTrades();
+  const { addTrade, brokerAccounts, playbookStrategies, selectedAccount } = useTrades();
 
   const [symbol, setSymbol] = useState("NAS100");
   const [direction, setDirection] = useState<TradeDirection>("LONG");
@@ -122,7 +122,7 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
 
     const now = new Date();
     const dateStr = now.toISOString().replace("T", " ").slice(0, 16);
-    const accountName = brokerAccounts[0]?.name || "Apex Prop 100K Fund";
+    const accountName = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Apex Prop 100K Fund");
 
     // Create trade log
     const newTrade: Omit<Trade, "id"> = {

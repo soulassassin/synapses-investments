@@ -104,6 +104,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
                 postTradeState: "Satisfied",
               },
               timeframe: t.timeframe || "5m",
+              chartScreenshot: t.chartScreenshot || (Array.isArray(t.chartScreenshots) && t.chartScreenshots[0]) || undefined,
+              chartScreenshots: Array.isArray(t.chartScreenshots) ? t.chartScreenshots : (t.chartScreenshot ? [t.chartScreenshot] : []),
               notes: t.notes || "",
               account: t.account || "Apex Prop 100K Fund",
             }));
@@ -186,49 +188,120 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const importFromCSV = (csvText: string) => {
-    const lines = csvText.trim().split("\n");
+    const lines = csvText.trim().split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
     if (lines.length <= 1) return;
 
+    // Header row normalization
+    const headerRow = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/[\"\']/g, ""));
+
+    const findIndex = (keywords: string[]): number => {
+      return headerRow.findIndex((col) => keywords.some((k) => col.includes(k)));
+    };
+
+    const tickerIdx = findIndex(["ticker", "symbol", "instrument", "pair", "item"]);
+    const assetClassIdx = findIndex(["asset", "class", "type"]);
+    const directionIdx = findIndex(["direction", "side", "type", "action", "cmd"]);
+    const entryDateIdx = findIndex(["entrydate", "open time", "time", "date", "open"]);
+    const exitDateIdx = findIndex(["exitdate", "close time", "close_time", "close date"]);
+    const sessionIdx = findIndex(["session", "killzone", "market"]);
+    const entryPriceIdx = findIndex(["entryprice", "openprice", "open price", "entry_price", "price"]);
+    const exitPriceIdx = findIndex(["exitprice", "closeprice", "close price", "exit_price"]);
+    const stopLossIdx = findIndex(["stoploss", "sl", "stop_loss", "stop"]);
+    const takeProfitIdx = findIndex(["takeprofit", "tp", "take_profit", "target"]);
+    const positionSizeIdx = findIndex(["positionsize", "lots", "volume", "size", "contracts", "qty"]);
+    const grossPnLIdx = findIndex(["grosspnl", "gross profit", "gross"]);
+    const netPnLIdx = findIndex(["netpnl", "profit", "pnl", "p&l", "net profit", "net"]);
+    const commissionIdx = findIndex(["commission", "comm", "fees"]);
+    const swapIdx = findIndex(["swap", "rollover"]);
+    const rMultipleIdx = findIndex(["rmultiple", "r:r", "r_multiple", "r multiple", "r"]);
+    const strategyIdx = findIndex(["strategy", "model", "playbook"]);
+    const setupIdx = findIndex(["setup", "confluence", "pattern"]);
+    const mistakeTagsIdx = findIndex(["mistaketags", "mistakes", "errors", "tags"]);
+    const notesIdx = findIndex(["notes", "comment", "reflections"]);
+    const accountIdx = findIndex(["account", "accountnumber", "broker", "fund"]);
+
     const parsed: Trade[] = [];
+
     for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(",");
-      if (parts.length >= 7) {
-        parsed.push({
-          id: `CSV-${Date.now().toString().slice(-4)}-${i}`,
-          ticker: parts[0]?.trim() || "NAS100",
-          assetClass: (parts[1]?.trim() as any) || "Indices",
-          direction: (parts[2]?.trim() as any) || "LONG",
-          entryDate: parts[3]?.trim() || new Date().toISOString().slice(0, 16),
-          exitDate: parts[4]?.trim() || new Date().toISOString().slice(0, 16),
-          session: (parts[5]?.trim() as any) || "New York",
-          entryPrice: parseFloat(parts[6]) || 0,
-          exitPrice: parseFloat(parts[7]) || 0,
-          stopLoss: parseFloat(parts[8]) || 0,
-          takeProfit: parseFloat(parts[9]) || undefined,
-          positionSize: parseFloat(parts[10]) || 1,
-          grossPnL: parseFloat(parts[11]) || 0,
-          netPnL: parseFloat(parts[12]) || 0,
-          commission: parseFloat(parts[13]) || 0,
-          swap: parseFloat(parts[14]) || 0,
-          slippagePips: 0.5,
-          spreadPips: 1.0,
-          rMultiple: parseFloat(parts[15]) || 0,
-          strategy: parts[16]?.trim() || "Imported",
-          setup: parts[17]?.trim() || "General",
-          mistakeTags: parts[18] ? parts[18].split(";").map((s) => s.trim()) : [],
-          marketCondition: "Trending Bullish",
-          emotion: {
-            confidence: 5,
-            stress: 1,
-            discipline: 5,
-            preTradeState: "Focused",
-            postTradeState: "Satisfied",
-          },
-          notes: parts[23]?.trim() || "",
-          account: parts[24]?.trim() || "Apex Prop 100K Fund",
-        });
+      // Split with quotes support
+      const row = lines[i].split(",").map((c) => c.trim().replace(/^["']|["']$/g, ""));
+      if (row.length < 2) continue;
+
+      const ticker = (tickerIdx !== -1 ? row[tickerIdx] : row[0])?.toUpperCase() || "NAS100";
+      const rawDir = (directionIdx !== -1 ? row[directionIdx] : row[2])?.toUpperCase() || "BUY";
+      const direction: "LONG" | "SHORT" = rawDir.includes("SELL") || rawDir.includes("SHORT") ? "SHORT" : "LONG";
+
+      const entryPrice = parseFloat(entryPriceIdx !== -1 ? row[entryPriceIdx] : row[6]) || 0;
+      const exitPrice = parseFloat(exitPriceIdx !== -1 ? row[exitPriceIdx] : row[7]) || entryPrice;
+      const stopLoss = parseFloat(stopLossIdx !== -1 ? row[stopLossIdx] : row[8]) || (direction === "LONG" ? entryPrice * 0.99 : entryPrice * 1.01);
+      const takeProfit = parseFloat(takeProfitIdx !== -1 ? row[takeProfitIdx] : row[9]) || undefined;
+      const positionSize = parseFloat(positionSizeIdx !== -1 ? row[positionSizeIdx] : row[10]) || 1;
+      
+      let netPnL = parseFloat(netPnLIdx !== -1 ? row[netPnLIdx] : row[12]);
+      if (isNaN(netPnL)) {
+        const diff = direction === "LONG" ? exitPrice - entryPrice : entryPrice - exitPrice;
+        netPnL = Number((diff * positionSize * 1).toFixed(2));
       }
+
+      let grossPnL = parseFloat(grossPnLIdx !== -1 ? row[grossPnLIdx] : row[11]);
+      if (isNaN(grossPnL)) grossPnL = netPnL;
+
+      const commission = parseFloat(commissionIdx !== -1 ? row[commissionIdx] : row[13]) || 0;
+      const swap = parseFloat(swapIdx !== -1 ? row[swapIdx] : row[14]) || 0;
+
+      let rMultiple = parseFloat(rMultipleIdx !== -1 ? row[rMultipleIdx] : row[15]);
+      if (isNaN(rMultiple)) {
+        const riskDistance = Math.abs(entryPrice - stopLoss);
+        const gainDistance = direction === "LONG" ? exitPrice - entryPrice : entryPrice - exitPrice;
+        rMultiple = riskDistance > 0 ? Number((gainDistance / riskDistance).toFixed(2)) : 0;
+      }
+
+      const entryDate = entryDateIdx !== -1 && row[entryDateIdx] ? row[entryDateIdx] : new Date().toISOString().replace("T", " ").slice(0, 16);
+      const exitDate = exitDateIdx !== -1 && row[exitDateIdx] ? row[exitDateIdx] : entryDate;
+      const session = (sessionIdx !== -1 ? row[sessionIdx] : row[5]) as any || "New York";
+      const assetClass = (assetClassIdx !== -1 ? row[assetClassIdx] : row[1]) as any || "Indices";
+      const strategy = strategyIdx !== -1 && row[strategyIdx] ? row[strategyIdx] : "Macro Range Expansion";
+      const setup = setupIdx !== -1 && row[setupIdx] ? row[setupIdx] : "Fair Value Gap";
+      const mistakeTags = mistakeTagsIdx !== -1 && row[mistakeTagsIdx] ? row[mistakeTagsIdx].split(";").map((s) => s.trim()).filter(Boolean) : [];
+      const notes = notesIdx !== -1 ? row[notesIdx] : "";
+      const account = accountIdx !== -1 && row[accountIdx] ? row[accountIdx] : "Apex Prop 100K Fund";
+
+      parsed.push({
+        id: `CSV-${Date.now().toString().slice(-4)}-${i}`,
+        ticker,
+        assetClass,
+        direction,
+        entryDate,
+        exitDate,
+        session,
+        entryPrice,
+        exitPrice,
+        stopLoss,
+        takeProfit,
+        positionSize,
+        grossPnL,
+        netPnL,
+        commission,
+        swap,
+        slippagePips: 0.5,
+        spreadPips: 1.0,
+        rMultiple,
+        strategy,
+        setup,
+        mistakeTags,
+        marketCondition: "Trending Bullish",
+        emotion: {
+          confidence: 5,
+          stress: 1,
+          discipline: 5,
+          preTradeState: "Focused",
+          postTradeState: "Satisfied",
+        },
+        notes,
+        account,
+      });
     }
+
     if (parsed.length > 0) {
       setTrades((prev) => [...parsed, ...prev]);
     }

@@ -41,6 +41,7 @@ export interface Trade {
   marketCondition: MarketCondition;
   emotion: EmotionLog;
   chartScreenshot?: string;
+  chartScreenshots?: string[];
   notes?: string;
   timeframe?: string;
   account: string;

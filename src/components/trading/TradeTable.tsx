@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Trade } from "@/lib/types";
 import { GlassCard } from "../glass/GlassCard";
 import { GlowBadge } from "../glass/GlowBadge";
@@ -17,6 +17,13 @@ import {
   Sparkles,
   AlertTriangle,
   RotateCcw,
+  Camera,
+  CheckSquare,
+  Square,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Check,
 } from "lucide-react";
 
 interface TradeTableProps {
@@ -32,9 +39,25 @@ export function TradeTable({
   onEditTrade,
   onOpenImportModal,
 }: TradeTableProps) {
-  const { deleteTrade, filters, setFilters, exportToCSV, resetSampleData } = useTrades();
+  const {
+    deleteTrade,
+    filters,
+    setFilters,
+    exportToCSV,
+    resetSampleData,
+    playbookStrategies,
+    brokerAccounts,
+  } = useTrades();
+
   const [sortField, setSortField] = useState<keyof Trade>("entryDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Selection state for bulk operations
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   const handleSort = (field: keyof Trade) => {
     if (sortField === field) {
@@ -45,21 +68,132 @@ export function TradeTable({
     }
   };
 
-  const sortedTrades = [...trades].sort((a, b) => {
-    let aVal = a[sortField];
-    let bVal = b[sortField];
-    if (typeof aVal === "string") {
-      return sortOrder === "asc"
-        ? (aVal as string).localeCompare(bVal as string)
-        : (bVal as string).localeCompare(aVal as string);
+  const sortedTrades = useMemo(() => {
+    return [...trades].sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+      if (typeof aVal === "string") {
+        return sortOrder === "asc"
+          ? (aVal as string).localeCompare(bVal as string)
+          : (bVal as string).localeCompare(aVal as string);
+      }
+      if (typeof aVal === "number") {
+        return sortOrder === "asc"
+          ? (aVal as number) - (bVal as number)
+          : (bVal as number) - (aVal as number);
+      }
+      return 0;
+    });
+  }, [trades, sortField, sortOrder]);
+
+  // Paginated trades
+  const totalPages = pageSize === 0 ? 1 : Math.ceil(sortedTrades.length / pageSize) || 1;
+  const paginatedTrades = useMemo(() => {
+    if (pageSize === 0) return sortedTrades;
+    const start = (currentPage - 1) * pageSize;
+    return sortedTrades.slice(start, start + pageSize);
+  }, [sortedTrades, currentPage, pageSize]);
+
+  // Toggle single selection
+  const toggleSelect = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Toggle Select All on current page
+  const allCurrentSelected = paginatedTrades.length > 0 && paginatedTrades.every((t) => selectedIds.has(t.id));
+  const toggleSelectAllCurrent = () => {
+    if (allCurrentSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        paginatedTrades.forEach((t) => next.delete(t.id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        paginatedTrades.forEach((t) => next.add(t.id));
+        return next;
+      });
     }
-    if (typeof aVal === "number") {
-      return sortOrder === "asc"
-        ? (aVal as number) - (bVal as number)
-        : (bVal as number) - (aVal as number);
+  };
+
+  // Bulk Delete
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    if (confirm(`Are you sure you want to delete ${selectedIds.size} execution records?`)) {
+      selectedIds.forEach((id) => deleteTrade(id));
+      setSelectedIds(new Set());
     }
-    return 0;
-  });
+  };
+
+  // Bulk Export Selected
+  const handleBulkExportSelected = () => {
+    const selectedList = trades.filter((t) => selectedIds.has(t.id));
+    if (selectedList.length === 0) return;
+
+    const headers = [
+      "ID",
+      "Ticker",
+      "AssetClass",
+      "Direction",
+      "EntryDate",
+      "ExitDate",
+      "Session",
+      "EntryPrice",
+      "ExitPrice",
+      "StopLoss",
+      "TakeProfit",
+      "PositionSize",
+      "GrossPnL",
+      "NetPnL",
+      "Commission",
+      "Swap",
+      "RMultiple",
+      "Strategy",
+      "Setup",
+      "MistakeTags",
+      "Account",
+    ];
+
+    const rows = selectedList.map((t) => [
+      t.id,
+      t.ticker,
+      t.assetClass,
+      t.direction,
+      t.entryDate,
+      t.exitDate,
+      t.session,
+      t.entryPrice,
+      t.exitPrice,
+      t.stopLoss,
+      t.takeProfit || "",
+      t.positionSize,
+      t.grossPnL,
+      t.netPnL,
+      t.commission || 0,
+      t.swap || 0,
+      t.rMultiple || 0,
+      `"${t.strategy || ""}"`,
+      `"${t.setup || ""}"`,
+      `"${(t.mistakeTags || []).join(";")}"`,
+      `"${t.account || ""}"`,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `synapses_selected_${selectedIds.size}_trades_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <GlassCard className="p-5 sm:p-6 bg-black/85 backdrop-blur-2xl border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
@@ -67,11 +201,11 @@ export function TradeTable({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-white tracking-wide">
-              EXECUTION LOGS & PLAYBOOK
+            <h3 className="text-lg font-bold text-white tracking-wide font-mono">
+              EXECUTION LOGS & PLAYBOOK MATRIX
             </h3>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
-              {sortedTrades.length} Trades Filtered
+              {sortedTrades.length} Trades
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-0.5">
@@ -96,7 +230,7 @@ export function TradeTable({
             onClick={exportToCSV}
             icon={<Download className="w-3.5 h-3.5 text-zinc-300" />}
           >
-            Export CSV
+            Export All CSV
           </GlassButton>
 
           <GlassButton
@@ -112,14 +246,17 @@ export function TradeTable({
       </div>
 
       {/* Filter Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 mb-5 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/10">
         {/* Search Ticker */}
         <div className="relative">
           <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={filters.ticker || ""}
-            onChange={(e) => setFilters((prev) => ({ ...prev, ticker: e.target.value }))}
+            onChange={(e) => {
+              setFilters((prev) => ({ ...prev, ticker: e.target.value }));
+              setCurrentPage(1);
+            }}
             placeholder="Search symbol (NAS100)"
             className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/50"
           />
@@ -128,7 +265,10 @@ export function TradeTable({
         {/* Asset Class Filter */}
         <select
           value={filters.assetClass || "ALL"}
-          onChange={(e) => setFilters((prev) => ({ ...prev, assetClass: e.target.value as any }))}
+          onChange={(e) => {
+            setFilters((prev) => ({ ...prev, assetClass: e.target.value as any }));
+            setCurrentPage(1);
+          }}
           className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-white/50"
         >
           <option value="ALL">All Asset Classes</option>
@@ -141,7 +281,10 @@ export function TradeTable({
         {/* Direction Filter */}
         <select
           value={filters.direction || "ALL"}
-          onChange={(e) => setFilters((prev) => ({ ...prev, direction: e.target.value as any }))}
+          onChange={(e) => {
+            setFilters((prev) => ({ ...prev, direction: e.target.value as any }));
+            setCurrentPage(1);
+          }}
           className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-white/50"
         >
           <option value="ALL">All Directions</option>
@@ -149,36 +292,46 @@ export function TradeTable({
           <option value="SHORT">Short Only</option>
         </select>
 
-        {/* Setup Filter */}
+        {/* Strategy / Setup Filter */}
         <select
-          value={filters.setup || "ALL"}
-          onChange={(e) => setFilters((prev) => ({ ...prev, setup: e.target.value }))}
+          value={filters.strategy || "ALL"}
+          onChange={(e) => {
+            setFilters((prev) => ({ ...prev, strategy: e.target.value }));
+            setCurrentPage(1);
+          }}
           className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-white/50"
         >
-          <option value="ALL">All Setups</option>
-          <option value="Fair Value Gap">Fair Value Gap (FVG)</option>
-          <option value="Liquidity Sweep">Liquidity Sweep</option>
-          <option value="Order Block Bounce">Order Block Bounce</option>
-          <option value="Breakout & Retest">Breakout & Retest</option>
+          <option value="ALL">All Strategies</option>
+          {(playbookStrategies || []).map((s) => (
+            <option key={s.id} value={s.name}>
+              {s.name}
+            </option>
+          ))}
         </select>
 
         {/* Session Filter */}
         <select
           value={filters.session || "ALL"}
-          onChange={(e) => setFilters((prev) => ({ ...prev, session: e.target.value as any }))}
+          onChange={(e) => {
+            setFilters((prev) => ({ ...prev, session: e.target.value as any }));
+            setCurrentPage(1);
+          }}
           className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-white/50"
         >
           <option value="ALL">All Sessions</option>
-          <option value="London">London (08:00 - 16:00 GMT)</option>
-          <option value="New York">New York (13:00 - 21:00 GMT)</option>
-          <option value="Asia / Tokyo">Asia / Tokyo (00:00 - 08:00 GMT)</option>
+          <option value="London">London</option>
+          <option value="New York">New York</option>
+          <option value="Asia / Tokyo">Asia / Tokyo</option>
           <option value="London/NY Overlap">London/NY Overlap</option>
         </select>
 
         {/* Outcome Filter */}
         <select
           value={filters.outcome || "ALL"}
-          onChange={(e) => setFilters((prev) => ({ ...prev, outcome: e.target.value as any }))}
+          onChange={(e) => {
+            setFilters((prev) => ({ ...prev, outcome: e.target.value as any }));
+            setCurrentPage(1);
+          }}
           className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-white/50"
         >
           <option value="ALL">All Outcomes</option>
@@ -187,11 +340,57 @@ export function TradeTable({
         </select>
       </div>
 
+      {/* Bulk Action Strip (Appears when 1+ rows selected) */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between p-2.5 mb-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <CheckSquare className="w-4 h-4 text-cyan-400" />
+            <span className="font-bold">{selectedIds.size} execution records selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkExportSelected}
+              className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Selected CSV</span>
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete Selected</span>
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-2 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table Container */}
       <div className="overflow-x-auto custom-scrollbar border border-white/10 rounded-xl">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+              {/* Checkbox */}
+              <th className="p-3 w-10 text-center">
+                <button
+                  onClick={toggleSelectAllCurrent}
+                  className="text-zinc-400 hover:text-white"
+                  title={allCurrentSelected ? "Deselect page" : "Select all on page"}
+                >
+                  {allCurrentSelected ? (
+                    <CheckSquare className="w-4 h-4 text-white" />
+                  ) : (
+                    <Square className="w-4 h-4 text-zinc-500" />
+                  )}
+                </button>
+              </th>
               <th
                 onClick={() => handleSort("entryDate")}
                 className="p-3 font-semibold cursor-pointer hover:text-white"
@@ -231,29 +430,53 @@ export function TradeTable({
                 </div>
               </th>
               <th className="p-3 font-semibold">MISTAKE TAGS</th>
-              <th className="p-3 font-semibold">SESSION</th>
+              <th className="p-3 font-semibold">ACCOUNT & SESSION</th>
               <th className="p-3 font-semibold text-center">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {sortedTrades.length === 0 ? (
+            {paginatedTrades.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-zinc-400">
+                <td colSpan={10} className="p-8 text-center text-zinc-400">
                   No trades match the current filter criteria.
                 </td>
               </tr>
             ) : (
-              sortedTrades.map((trade) => {
+              paginatedTrades.map((trade) => {
                 const isWin = trade.netPnL >= 0;
+                const isSelected = selectedIds.has(trade.id);
+                const hasScreenshot = (trade.chartScreenshots && trade.chartScreenshots.length > 0) || trade.chartScreenshot;
+
                 return (
                   <tr
                     key={trade.id}
-                    className="hover:bg-white/[0.04] transition-colors group cursor-pointer"
+                    className={`hover:bg-white/[0.04] transition-colors group cursor-pointer ${
+                      isSelected ? "bg-white/[0.06]" : ""
+                    }`}
                     onClick={() => onSelectTrade(trade)}
                   >
+                    {/* Checkbox */}
+                    <td
+                      className="p-3 text-center"
+                      onClick={(e) => toggleSelect(trade.id, e)}
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-4 h-4 text-white" />
+                      ) : (
+                        <Square className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400" />
+                      )}
+                    </td>
+
                     {/* Date */}
                     <td className="p-3 font-mono text-zinc-300 whitespace-nowrap">
-                      {trade.entryDate}
+                      <div className="flex items-center gap-1.5">
+                        <span>{trade.entryDate}</span>
+                        {hasScreenshot && (
+                          <span title="Screenshot attached">
+                            <Camera className="w-3 h-3 text-cyan-400" />
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Symbol */}
@@ -330,9 +553,10 @@ export function TradeTable({
                       </div>
                     </td>
 
-                    {/* Session */}
+                    {/* Account & Session */}
                     <td className="p-3 font-mono text-zinc-400 text-[11px] whitespace-nowrap">
-                      {trade.session}
+                      <span className="block text-zinc-300">{trade.account || "Apex 100K"}</span>
+                      <span className="text-zinc-500 text-[10px]">{trade.session}</span>
                     </td>
 
                     {/* Actions */}
@@ -370,6 +594,53 @@ export function TradeTable({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 text-xs font-mono text-zinc-400">
+        <div className="flex items-center gap-2">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="px-2 py-1 rounded bg-black/60 border border-white/10 text-white focus:outline-none"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={0}>All ({sortedTrades.length})</option>
+          </select>
+          <span className="text-zinc-500">
+            Showing {sortedTrades.length === 0 ? 0 : (currentPage - 1) * (pageSize || sortedTrades.length) + 1} -{" "}
+            {pageSize === 0 ? sortedTrades.length : Math.min(currentPage * pageSize, sortedTrades.length)} of {sortedTrades.length}
+          </span>
+        </div>
+
+        {pageSize > 0 && totalPages > 1 && (
+          <div className="flex items-center gap-1.5">
+            <button
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="p-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <span className="px-2 text-white font-semibold">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="p-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </GlassCard>
   );

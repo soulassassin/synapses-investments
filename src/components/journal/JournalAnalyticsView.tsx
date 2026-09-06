@@ -17,11 +17,15 @@ import {
   DollarSign,
 } from "lucide-react";
 
+import { useTradeMetrics } from "@/hooks/useTradeMetrics";
+import { PnLChart } from "@/components/trading/PnLChart";
+
 interface JournalAnalyticsViewProps {
   trades: Trade[];
 }
 
 export function JournalAnalyticsView({ trades }: JournalAnalyticsViewProps) {
+  const metrics = useTradeMetrics(trades);
   // 1. Session Breakdown
   const sessionStats = useMemo(() => {
     const sessions: Record<string, { count: number; wins: number; losses: number; pnl: number; r: number }> = {
@@ -136,6 +140,9 @@ export function JournalAnalyticsView({ trades }: JournalAnalyticsViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* 0. Portfolio Equity Curve & Drawdown Interactive Visualizer */}
+      <PnLChart data={metrics.pnlCurve} />
+
       {/* 1. Killzone Session Matrix */}
       <div className="p-5 rounded-2xl bg-black/85 border border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.8)] space-y-4">
         <div className="flex items-center justify-between">

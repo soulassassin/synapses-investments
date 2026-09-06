@@ -8,6 +8,10 @@ import { Trade, AssetClass, TradeDirection, SessionName, MarketCondition } from 
 import {
   Sparkles,
   AlertTriangle,
+  Upload,
+  Image as ImageIcon,
+  X,
+  Camera,
 } from "lucide-react";
 
 interface TradeLogModalProps {
@@ -45,6 +49,7 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
   const [notes, setNotes] = useState("");
   const [account, setAccount] = useState("Apex Prop 100K Fund");
   const [timeframe, setTimeframe] = useState("5m");
+  const [screenshots, setScreenshots] = useState<string[]>([]);
 
   const availableMistakes = [
     "FOMO",
@@ -84,13 +89,51 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
       setNotes(tradeToEdit.notes || "");
       setAccount(tradeToEdit.account || "Apex Prop 100K Fund");
       setTimeframe(tradeToEdit.timeframe || "5m");
+      const existingScreenshots = tradeToEdit.chartScreenshots && tradeToEdit.chartScreenshots.length > 0
+        ? tradeToEdit.chartScreenshots
+        : (tradeToEdit.chartScreenshot ? [tradeToEdit.chartScreenshot] : []);
+      setScreenshots(existingScreenshots);
     } else {
       const now = new Date();
       const dateStr = now.toISOString().replace("T", " ").slice(0, 16);
       setEntryDate(dateStr);
       setExitDate(dateStr);
+      setScreenshots([]);
     }
   }, [tradeToEdit, isOpen]);
+
+  const handleImageFiles = (files: FileList | File[]) => {
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        if (base64) {
+          setScreenshots((prev) => [...prev, base64]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) files.push(blob);
+      }
+    }
+    if (files.length > 0) {
+      handleImageFiles(files);
+    }
+  };
+
+  const removeScreenshot = (index: number) => {
+    setScreenshots((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const isLong = direction === "LONG";
   const priceDiff = isLong ? exitPrice - entryPrice : entryPrice - exitPrice;
@@ -143,6 +186,8 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
       notes,
       timeframe,
       account,
+      chartScreenshot: screenshots.length > 0 ? screenshots[0] : undefined,
+      chartScreenshots: screenshots,
     };
 
     if (tradeToEdit) {
@@ -513,6 +558,63 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
               placeholder="Document setup reasoning, market context, entry trigger..."
               className="w-full glass-input px-3 py-2 rounded-xl text-xs custom-scrollbar resize-none"
             />
+          </div>
+
+          {/* Screenshot Attachments & Clipboard Paste Zone */}
+          <div className="space-y-2" onPaste={handlePaste}>
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-zinc-300 font-semibold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-white" />
+                <span>Execution Screenshots & Charts</span>
+                <span className="text-[10px] text-zinc-500 font-normal">({screenshots.length} attached)</span>
+              </label>
+              <span className="text-[10px] font-mono text-zinc-400">
+                Tip: Press <kbd className="px-1 py-0.5 rounded bg-white/10 text-white">Ctrl+V</kbd> anywhere to paste
+              </span>
+            </div>
+
+            {/* Drop Zone */}
+            <label className="border border-dashed border-white/20 hover:border-white/50 rounded-xl p-3 flex items-center justify-center gap-3 cursor-pointer bg-white/[0.02] hover:bg-white/[0.05] transition-all">
+              <Upload className="w-4 h-4 text-zinc-400" />
+              <span className="text-xs text-zinc-300 font-medium">
+                Click to upload chart images or drag & drop files
+              </span>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => e.target.files && handleImageFiles(e.target.files)}
+                className="hidden"
+              />
+            </label>
+
+            {/* Screenshot Thumbnails Grid */}
+            {screenshots.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
+                {screenshots.map((src, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group rounded-lg overflow-hidden border border-white/20 bg-black aspect-video flex items-center justify-center"
+                  >
+                    <img
+                      src={src}
+                      alt={`Screenshot ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeScreenshot(idx)}
+                        className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-600 transition-colors"
+                        title="Remove screenshot"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

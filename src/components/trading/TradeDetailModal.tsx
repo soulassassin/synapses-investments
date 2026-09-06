@@ -163,16 +163,48 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
             </div>
           </div>
 
-          <div className="relative h-44 bg-zinc-950/80 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center gap-2 mb-2 text-xs font-mono text-white">
-              <span>{trade.ticker}</span>
-              <span>•</span>
-              <span>{activeChartTab} Execution Canvas</span>
+          {/* Screenshot Display or Execution Canvas */}
+          {((trade.chartScreenshots && trade.chartScreenshots.length > 0) || trade.chartScreenshot) ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {(trade.chartScreenshots && trade.chartScreenshots.length > 0
+                  ? trade.chartScreenshots
+                  : [trade.chartScreenshot!]
+                ).map((src, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group rounded-xl overflow-hidden border border-white/10 bg-black aspect-video flex items-center justify-center cursor-zoom-in"
+                    onClick={() => window.open(src, "_blank")}
+                  >
+                    <img
+                      src={src}
+                      alt={`Execution Chart ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-xs font-mono text-white bg-black/80 px-2.5 py-1 rounded-full border border-white/20">
+                        Click to Expand Fullscreen
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-xs text-zinc-500 max-w-sm">
-              Setup: {trade.setup} • Strategy: {trade.strategy} • Entry Trigger: Liquidity grab into fair value gap.
-            </p>
-          </div>
+          ) : (
+            <div className="relative h-40 bg-zinc-950/80 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center p-4">
+              <div className="flex items-center gap-2 mb-1.5 text-xs font-mono text-white">
+                <span>{trade.ticker}</span>
+                <span>•</span>
+                <span>{activeChartTab} Execution Canvas</span>
+              </div>
+              <p className="text-xs text-zinc-500 max-w-sm">
+                Setup: {trade.setup} • Strategy: {trade.strategy} • Session: {trade.session}
+              </p>
+              <span className="text-[10px] font-mono text-zinc-600 mt-2">
+                (No chart screenshot uploaded. You can attach charts by editing this trade)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Mistakes & Psychology Feedback */}

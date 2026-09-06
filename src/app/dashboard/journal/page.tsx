@@ -27,6 +27,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { GlassButton } from "@/components/glass/GlassButton";
+import { GlassModal } from "@/components/glass/GlassModal";
 import { TradeTable } from "@/components/trading/TradeTable";
 import { TradeLogModal } from "@/components/trading/TradeLogModal";
 import { TradeDetailModal } from "@/components/trading/TradeDetailModal";
@@ -47,6 +48,10 @@ export default function JournalPage() {
     deleteTrade,
     exportToCSV,
     resetSampleData,
+    brokerAccounts,
+    selectedAccount,
+    setSelectedAccount,
+    connectBroker,
   } = useTrades();
 
   // Active View Tab State (default to MATRIX for daily execution workflow)
@@ -58,11 +63,25 @@ export default function JournalPage() {
   const [tradeToEdit, setTradeToEdit] = useState<Trade | null>(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isConnectAccountOpen, setIsConnectAccountOpen] = useState(false);
+  const [newBrokerPlatform, setNewBrokerPlatform] = useState<any>("MetaTrader 5");
+  const [newAccountName, setNewAccountName] = useState("");
+  const [newAccountNumber, setNewAccountNumber] = useState("");
 
   const handleEditTrade = (trade: Trade) => {
     setSelectedTrade(null);
     setTradeToEdit(trade);
     setIsLogModalOpen(true);
+  };
+
+  const handleConnectNewAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAccountName.trim()) return;
+    connectBroker(newBrokerPlatform, newAccountName.trim(), newAccountNumber.trim());
+    setSelectedAccount(newAccountName.trim());
+    setIsConnectAccountOpen(false);
+    setNewAccountName("");
+    setNewAccountNumber("");
   };
 
   const winRate = currentMetrics.winRate || 0;
@@ -89,13 +108,46 @@ export default function JournalPage() {
               QUANTITATIVE EXECUTION JOURNAL & PLAYBOOK
             </h1>
           </div>
-          <p className="text-xs text-zinc-400 mt-1 font-mono">
-            Zero-G Execution Black Box • Encrypted Local Storage • Institutional DMA Telemetry
-          </p>
+          <div className="flex flex-wrap items-center gap-3 mt-1 text-xs font-mono text-zinc-400">
+            <span>Zero-G Execution Black Box • Encrypted Local Vault</span>
+            <span className="text-zinc-600">•</span>
+            {/* Active Account Pill */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-[11px] text-zinc-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Filtering: <strong className="text-white">{selectedAccount === "ALL" ? "All Accounts Combined" : selectedAccount}</strong></span>
+            </div>
+          </div>
         </div>
 
         {/* Action Buttons Group */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Multi-Account Selector */}
+          <div className="relative">
+            <select
+              value={selectedAccount}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-white/[0.06] border border-white/20 text-xs font-mono font-bold text-white focus:outline-none focus:border-white/50 cursor-pointer"
+            >
+              <option value="ALL" className="bg-zinc-950 text-white">ALL Accounts ({trades.length} Trades)</option>
+              {(brokerAccounts || []).map((acc) => (
+                <option key={acc.id} value={acc.name} className="bg-zinc-950 text-white">
+                  {acc.name} ({acc.platform})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Connect Account Button */}
+          <GlassButton
+            variant="outline"
+            size="sm"
+            onClick={() => setIsConnectAccountOpen(true)}
+            icon={<Sparkles className="w-3.5 h-3.5 text-cyan-400" />}
+            title="Connect a new broker or prop firm account"
+          >
+            + Account
+          </GlassButton>
+
           {/* Toggle Spot DMA Quick Entry */}
           <button
             onClick={() => setIsQuickEntryOpen(!isQuickEntryOpen)}
@@ -380,6 +432,77 @@ export default function JournalPage() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
       />
+
+      {/* Connect Broker / Prop Account Modal */}
+      <GlassModal
+        isOpen={isConnectAccountOpen}
+        onClose={() => setIsConnectAccountOpen(false)}
+        title="Connect Broker / Prop Firm Account"
+        subtitle="Add a dedicated execution account to isolate telemetry, risk guardrails, and metrics"
+        maxWidth="md"
+      >
+        <form onSubmit={handleConnectNewAccount} className="space-y-4">
+          <div>
+            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+              Trading Platform / Protocol
+            </label>
+            <select
+              value={newBrokerPlatform}
+              onChange={(e) => setNewBrokerPlatform(e.target.value as any)}
+              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
+            >
+              <option value="MetaTrader 5">MetaTrader 5 (MT5)</option>
+              <option value="MetaTrader 4">MetaTrader 4 (MT4)</option>
+              <option value="cTrader">cTrader FIX API</option>
+              <option value="Interactive Brokers">Interactive Brokers (IBKR)</option>
+              <option value="NinjaTrader">NinjaTrader 8</option>
+              <option value="Tradeovate">Tradovate REST/WS</option>
+              <option value="Custom Sync">Custom Manual Vault</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+              Account Display Name (e.g. Apex 100K Funded)
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Topstep 50K Express #1"
+              value={newAccountName}
+              onChange={(e) => setNewAccountName(e.target.value)}
+              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+              Login ID / Account Number (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 5109842"
+              value={newAccountNumber}
+              onChange={(e) => setNewAccountNumber(e.target.value)}
+              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+            <GlassButton
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsConnectAccountOpen(false)}
+            >
+              Cancel
+            </GlassButton>
+            <GlassButton type="submit" variant="pill" size="sm">
+              Connect Account
+            </GlassButton>
+          </div>
+        </form>
+      </GlassModal>
     </div>
   );
 }
