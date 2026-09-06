@@ -30,6 +30,8 @@ import {
   Radio,
   CheckCircle2,
   ExternalLink,
+  Terminal,
+  RefreshCw,
 } from "lucide-react";
 
 type OnboardingStep = 1 | 2 | 3 | 4 | 5;
@@ -37,7 +39,7 @@ type OnboardingStep = 1 | 2 | 3 | 4 | 5;
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, profile, completeOnboarding } = useAuth();
-  const { connectBroker, importFromCSV } = useTrades();
+  const { connectBroker, importFromCSV, scanAndSyncAccount, isScanningAccount, scanningLogs } = useTrades();
 
   const [step, setStep] = useState<OnboardingStep>(1);
 
@@ -204,24 +206,44 @@ export default function OnboardingPage() {
     }
   };
 
-  // Step 4: Handle account connection before moving to Step 5
-  const handleConnectAndProceed = () => {
+  // Step 4: Handle real account connection & automated ticket scanning
+  const handleConnectAndProceed = async () => {
     const finalCapital = customCapital ? parseFloat(customCapital) : startingCapital;
     const resolvedName =
       accountName.trim() ||
       `${accountPlatform} ${accountNumber ? `#${accountNumber}` : "Account"}`;
+    const resolvedNum = accountNumber.trim() || `ACC-${Date.now().toString().slice(-5)}`;
+    const resolvedServer = accountServer.trim() || `${accountPlatform}-Live-Server`;
 
-    const newAcc = connectBroker(
-      accountPlatform,
-      resolvedName,
-      accountNumber.trim() || `ACC-${Date.now().toString().slice(-5)}`,
-      accountServer.trim() || "Live-Server",
-      finalCapital,
-      accountCurrency,
-      "Connected"
-    );
+    const res = await scanAndSyncAccount({
+      platform: accountPlatform,
+      name: resolvedName,
+      accountNumber: resolvedNum,
+      server: resolvedServer,
+      balance: finalCapital,
+      currency: accountCurrency,
+      lookbackDays: 30,
+      autoImport: true,
+    });
 
-    setConnectedAccountInfo(newAcc);
+    if (res.success && res.account) {
+      setConnectedAccountInfo(res.account);
+      if (res.scannedTrades && res.scannedTrades.length > 0) {
+        setImportedTradesCount((prev) => prev + res.scannedTrades.length);
+      }
+    } else {
+      const newAcc = connectBroker(
+        accountPlatform,
+        resolvedName,
+        resolvedNum,
+        resolvedServer,
+        finalCapital,
+        accountCurrency,
+        "Connected"
+      );
+      setConnectedAccountInfo(newAcc);
+    }
+
     setStep(5);
   };
 
@@ -803,6 +825,37 @@ export default function OnboardingPage() {
                   </div>
                 )}
               </div>
+
+              {/* LIVE SCANNING RADAR & TERMINAL CONSOLE */}
+              {isScanningAccount && (
+                <div className="p-4 rounded-2xl bg-black/90 border border-cyan-500/40 space-y-3 animate-in fade-in duration-300 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+                      </span>
+                      <span className="text-xs font-mono font-bold text-cyan-300 uppercase">
+                        Scanning Broker Server & Parsing Closed Deals...
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-400">
+                      Live Telemetry Bridge
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-black/80 border border-white/10 font-mono text-[11px] text-zinc-300 max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+                    {scanningLogs.map((log, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <Terminal className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                        <span className={log.includes("ERROR") ? "text-red-400" : "text-zinc-300"}>
+                          {log}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -925,12 +978,15 @@ export default function OnboardingPage() {
               disabled={isSubmitting}
               className="synapses-pill-btn py-3 px-6 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
-              {isSubmitting ? (
-                <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              {isSubmitting || isScanningAccount ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <span>{isScanningAccount ? "Scanning Deals..." : "Deploying..."}</span>
+                </div>
               ) : step === 4 ? (
                 <>
-                  <Server className="w-4 h-4 text-black" />
-                  <span>Connect & Proceed</span>
+                  <RefreshCw className="w-4 h-4 text-black" />
+                  <span>Connect, Scan & Proceed</span>
                   <ArrowRight className="w-4 h-4 text-black" />
                 </>
               ) : step === 5 ? (

@@ -183,6 +183,39 @@ export interface BrokerAccount {
   lastSync: string;
   webhookUrl?: string;
   webhookSecret?: string;
+  scannedTradesCount?: number;
+  totalPnL?: number;
+  winRate?: number;
+  investorPassword?: string;
+}
+
+export interface BrokerScanRequest {
+  platform: BrokerAccount["platform"];
+  name: string;
+  accountNumber: string;
+  server?: string;
+  investorPassword?: string;
+  balance?: number;
+  currency?: string;
+  lookbackDays?: number;
+  autoImport?: boolean;
+}
+
+export interface BrokerScanResponse {
+  success: boolean;
+  message: string;
+  account: BrokerAccount;
+  scannedTrades: Trade[];
+  stats: {
+    totalTrades: number;
+    winningTrades: number;
+    losingTrades: number;
+    winRate: number;
+    netPnL: number;
+    grossProfit: number;
+    grossLoss: number;
+  };
+  logs: string[];
 }
 
 export interface PlaybookStrategy {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { Trade, FilterOptions, BrokerAccount, MetricStats, PlaybookStrategy } from "@/lib/types";
+import { Trade, FilterOptions, BrokerAccount, MetricStats, PlaybookStrategy, BrokerScanRequest, BrokerScanResponse } from "@/lib/types";
 import { initialTrades, initialBrokerAccounts, initialPlaybookStrategies, isLegacyMockTrade } from "@/lib/mockTrades";
 import { useTradeMetrics, PnLPoint } from "@/hooks/useTradeMetrics";
 import { useAuth } from "@/context/AuthContext";
@@ -42,6 +42,9 @@ interface TradeContextType {
     status?: "Connected" | "Syncing" | "Disconnected"
   ) => BrokerAccount;
   disconnectBroker: (id: string) => void;
+  scanAndSyncAccount: (params: BrokerScanRequest) => Promise<BrokerScanResponse>;
+  isScanningAccount: boolean;
+  scanningLogs: string[];
   exportToCSV: () => void;
   // Playbook Custom Strategies CRUD
   playbookStrategies: PlaybookStrategy[];
@@ -77,6 +80,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [selectedAccount, setSelectedAccount] = useState<string>("ALL");
   const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isScanningAccount, setIsScanningAccount] = useState(false);
+  const [scanningLogs, setScanningLogs] = useState<string[]>([]);
 
   // Load from LocalStorage and Supabase, filtering out any legacy placeholder mock data
   useEffect(() => {
@@ -525,6 +530,142 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const scanAndSyncAccount = async (params: BrokerScanRequest): Promise<BrokerScanResponse> => {
+    setIsScanningAccount(true);
+    setScanningLogs([
+      `[00:00.08] Initiating connection to ${params.platform} gateway...`,
+      `[00:00.22] Server target: ${params.server || "Live-Server"} | Login #${params.accountNumber}`,
+    ]);
+
+    try {
+      const res = await fetch("/api/broker/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Scanner error (${res.status}): ${res.statusText}`);
+      }
+
+      const scanResult: BrokerScanResponse = await res.json();
+      if (scanResult.logs && scanResult.logs.length > 0) {
+        setScanningLogs(scanResult.logs);
+      }
+
+      if (scanResult.success && scanResult.account) {
+        // 1. Update or append broker account in local state
+        setBrokerAccounts((prev) => {
+          const idx = prev.findIndex(
+            (a) =>
+              a.name.toLowerCase() === scanResult.account.name.toLowerCase() ||
+              (a.accountNumber === scanResult.account.accountNumber && a.platform === scanResult.account.platform)
+          );
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], ...scanResult.account };
+            return next;
+          }
+          return [scanResult.account, ...prev];
+        });
+
+        // 2. Select this account as the active filter
+        setSelectedAccount(scanResult.account.name);
+
+        // 3. Automatically import and merge scanned trades
+        if (scanResult.scannedTrades && scanResult.scannedTrades.length > 0) {
+          setTrades((prev) => {
+            const existingIds = new Set(prev.map((t) => t.id));
+            const newTrades = scanResult.scannedTrades.filter((t) => !existingIds.has(t.id));
+            const combined = [...newTrades, ...prev];
+            if (typeof window !== "undefined") {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(combined));
+            }
+            return combined;
+          });
+
+          // If user is authenticated with Supabase, sync new trades
+          if (user) {
+            const supabase = createClient();
+            if (supabase) {
+              const rows = scanResult.scannedTrades.map((t) => ({
+                user_id: user.id,
+                ticker: t.ticker,
+                asset_class: t.assetClass.toUpperCase(),
+                direction: t.direction,
+                entry_price: t.entryPrice,
+                exit_price: t.exitPrice,
+                stop_loss: t.stopLoss,
+                take_profit: t.takeProfit,
+                quantity: t.positionSize,
+                pnl: t.netPnL,
+                pnl_r: t.rMultiple,
+                outcome: t.netPnL > 0 ? "WIN" : t.netPnL < 0 ? "LOSS" : "BE",
+                strategy: t.strategy,
+                setup: t.setup,
+                session: t.session,
+                mistake_tag: t.mistakeTags?.[0] || null,
+                notes: t.notes || null,
+                entry_time: new Date(t.entryDate).toISOString(),
+                exit_time: new Date(t.exitDate).toISOString(),
+              }));
+              supabase.from("trades").insert(rows).then(({ error }) => {
+                if (error) console.warn("Supabase batch trades sync error:", error);
+              });
+
+              // Also upsert the broker account in Supabase
+              supabase.from("broker_accounts").upsert({
+                user_id: user.id,
+                name: scanResult.account.name,
+                platform: scanResult.account.platform,
+                account_number: scanResult.account.accountNumber,
+                balance: scanResult.account.balance,
+                initial_balance: params.balance || scanResult.account.balance,
+                currency: scanResult.account.currency || "USD",
+                status: scanResult.account.status,
+              }).then();
+            }
+          }
+        }
+      }
+
+      return scanResult;
+    } catch (err: any) {
+      console.error("scanAndSyncAccount error:", err);
+      const fallbackErr: BrokerScanResponse = {
+        success: false,
+        message: err?.message || "Failed to scan account",
+        account: {
+          id: `acc-${Date.now()}`,
+          name: params.name,
+          platform: params.platform,
+          accountNumber: params.accountNumber,
+          server: params.server || "Live-Server",
+          status: "Disconnected",
+          balance: params.balance || 100000,
+          equity: params.balance || 100000,
+          currency: params.currency || "USD",
+          lastSync: "Failed",
+        },
+        scannedTrades: [],
+        stats: {
+          totalTrades: 0,
+          winningTrades: 0,
+          losingTrades: 0,
+          winRate: 0,
+          netPnL: 0,
+          grossProfit: 0,
+          grossLoss: 0,
+        },
+        logs: [`[ERROR] ${err?.message || "Failed to establish broker gateway connection."}`],
+      };
+      setScanningLogs(fallbackErr.logs);
+      return fallbackErr;
+    } finally {
+      setIsScanningAccount(false);
+    }
+  };
+
   const exportToCSV = () => {
     if (trades.length === 0) return;
     const headers = [
@@ -674,6 +815,9 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         setSelectedAccount,
         connectBroker,
         disconnectBroker,
+        scanAndSyncAccount,
+        isScanningAccount,
+        scanningLogs,
         exportToCSV,
         playbookStrategies,
         addPlaybookStrategy,
