@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { GlassModal } from "../glass/GlassModal";
 import { GlassButton } from "../glass/GlassButton";
 import { useTrades } from "@/context/TradeContext";
+import { useAuth } from "@/context/AuthContext";
 import { Trade, AssetClass, TradeDirection, SessionName, MarketCondition } from "@/lib/types";
 import {
   Sparkles,
@@ -12,6 +13,7 @@ import {
   Image as ImageIcon,
   X,
   Camera,
+  Lock,
 } from "lucide-react";
 
 interface TradeLogModalProps {
@@ -21,7 +23,19 @@ interface TradeLogModalProps {
 }
 
 export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalProps) {
-  const { addTrade, updateTrade, brokerAccounts, playbookStrategies, selectedAccount } = useTrades();
+  const { subscription } = useAuth();
+  const {
+    addTrade,
+    updateTrade,
+    brokerAccounts,
+    playbookStrategies,
+    selectedAccount,
+    canLogTrade,
+    tradesRemainingOnDemo,
+    maxDemoTrades,
+    trades,
+    openPaywall,
+  } = useTrades();
 
   const [ticker, setTicker] = useState("NAS100");
   const [assetClass, setAssetClass] = useState<AssetClass>("Indices");
@@ -209,6 +223,46 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
       maxWidth="2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Demo Quota Exceeded Alert */}
+        {!tradeToEdit && !canLogTrade && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-xs font-mono font-bold text-white block">
+                  Demo Tier Quota Reached ({trades.length}/{maxDemoTrades} Trades Logged)
+                </span>
+                <span className="text-[11px] text-zinc-400 block mt-0.5">
+                  Your free demo allowance has been fully utilized. Upgrade to Institutional Pro to unlock unlimited journaling.
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openPaywall("Demo tier limit reached (25 trades capped). Upgrade to Pro for unlimited journaling.");
+              }}
+              className="py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-mono font-bold shrink-0 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 fill-black" />
+              <span>Unlock Pro</span>
+            </button>
+          </div>
+        )}
+
+        {/* Demo Quota Status when near cap */}
+        {!tradeToEdit && canLogTrade && !subscription.isPro && !subscription.isTrialActive && (
+          <div className="px-3.5 py-2 rounded-lg bg-white/[0.03] border border-white/10 flex items-center justify-between text-[11px] font-mono">
+            <span className="text-zinc-400">
+              Demo Quota: <span className="text-amber-400 font-bold">{trades.length}</span> / {maxDemoTrades} trades used
+            </span>
+            <span className="text-emerald-400 font-semibold">
+              {tradesRemainingOnDemo} logs remaining
+            </span>
+          </div>
+        )}
+
         {/* Live Calculated Banner */}
         <div className="p-4 rounded-xl bg-white/[0.04] border border-white/20 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -634,9 +688,10 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
             type="submit"
             variant="pill"
             size="sm"
-            icon={<Sparkles className="w-4 h-4 text-black" />}
+            disabled={!tradeToEdit && !canLogTrade}
+            icon={!tradeToEdit && !canLogTrade ? <Lock className="w-4 h-4 text-zinc-400" /> : <Sparkles className="w-4 h-4 text-black" />}
           >
-            {tradeToEdit ? "Save Changes" : "Save to Journal"}
+            {!tradeToEdit && !canLogTrade ? "Demo Limit Reached" : tradeToEdit ? "Save Changes" : "Save to Journal"}
           </GlassButton>
         </div>
       </form>

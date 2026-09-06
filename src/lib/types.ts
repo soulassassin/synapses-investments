@@ -231,3 +231,22 @@ export interface PlaybookStrategy {
   isDefault?: boolean;
 }
 
+export type SubscriptionTier = "demo" | "trial" | "pro" | "canceled";
+
+export type PaymentProvider = "lemonsqueezy" | "stripe" | "paystack";
+
+export interface SubscriptionStatus {
+  tier: SubscriptionTier;
+  trialStartedAt?: string;
+  trialEndsAt?: string;
+  trialDaysRemaining: number;
+  isTrialActive: boolean;
+  isPro: boolean;
+  isDemoCapped: boolean;
+  canLogTrade: boolean;
+  tradesLogged: number;
+  maxDemoTrades: number;
+  paymentProvider?: PaymentProvider;
+  subscriptionId?: string;
+}
+

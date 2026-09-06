@@ -52,6 +52,14 @@ interface TradeContextType {
   updatePlaybookStrategy: (id: string, updated: Partial<PlaybookStrategy>) => void;
   deletePlaybookStrategy: (id: string) => void;
   resetDefaultStrategies: () => void;
+  // Monetization, 7-Week Trial & Paywall Guardrails
+  isPaywallOpen: boolean;
+  paywallReason: string;
+  openPaywall: (reason?: string) => void;
+  closePaywall: () => void;
+  canLogTrade: boolean;
+  maxDemoTrades: number;
+  tradesRemainingOnDemo: number;
 }
 
 
@@ -73,7 +81,7 @@ const LOCAL_STORAGE_ACCOUNTS_KEY = "synapses_journal_accounts_v1";
 const LOCAL_STORAGE_PLAYBOOK_KEY = "synapses_journal_playbook_v1";
 
 export function TradeProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const [brokerAccounts, setBrokerAccounts] = useState<BrokerAccount[]>(initialBrokerAccounts);
   const [playbookStrategies, setPlaybookStrategies] = useState<PlaybookStrategy[]>(initialPlaybookStrategies);
@@ -82,6 +90,26 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isScanningAccount, setIsScanningAccount] = useState(false);
   const [scanningLogs, setScanningLogs] = useState<string[]>([]);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<string>("");
+
+  const MAX_DEMO_TRADES = 25;
+  const isFullAccess = subscription?.isPro || subscription?.isTrialActive;
+  const canLogTrade = isFullAccess || trades.length < MAX_DEMO_TRADES;
+  const tradesRemainingOnDemo = Math.max(0, MAX_DEMO_TRADES - trades.length);
+
+  const openPaywall = (reason?: string) => {
+    setPaywallReason(
+      reason ||
+        "Upgrade to Institutional Pro to unlock unlimited execution logs, automated broker gateways, and advanced quantitative analytics."
+    );
+    setIsPaywallOpen(true);
+  };
+
+  const closePaywall = () => {
+    setIsPaywallOpen(false);
+    setPaywallReason("");
+  };
 
   // Load from LocalStorage and Supabase, filtering out any legacy placeholder mock data
   useEffect(() => {
@@ -211,6 +239,10 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
 
   const addTrade = (tradeData: Omit<Trade, "id">) => {
+    if (!canLogTrade) {
+      openPaywall("Demo tier limit reached (25 trades maximum). Upgrade to Institutional Pro to unlock unlimited execution logs.");
+      return;
+    }
     const fallbackAcc = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account");
     const newTrade: Trade = {
       ...tradeData,
@@ -290,6 +322,20 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const importTrades = (newTrades: Trade[]) => {
+    if (!isFullAccess) {
+      if (tradesRemainingOnDemo <= 0) {
+        openPaywall("Demo tier limit reached (25 trades maximum). Upgrade to Institutional Pro to import additional trades.");
+        return;
+      }
+      const allowed = newTrades.slice(0, tradesRemainingOnDemo);
+      if (allowed.length < newTrades.length) {
+        openPaywall(
+          `Demo tier cap reached: Imported ${allowed.length} trades (${newTrades.length - allowed.length} omitted). Upgrade to Pro for unlimited trades.`
+        );
+      }
+      setTrades((prev) => [...allowed, ...prev]);
+      return;
+    }
     setTrades((prev) => [...newTrades, ...prev]);
   };
 
@@ -411,6 +457,25 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (parsed.length > 0) {
+      if (!isFullAccess) {
+        if (tradesRemainingOnDemo <= 0) {
+          openPaywall("Demo tier limit reached (25 trades maximum). Upgrade to Institutional Pro to import statements.");
+          return { success: false, count: 0, error: "Demo limit reached (25 trades maximum). Please upgrade to Pro." };
+        }
+        if (parsed.length > tradesRemainingOnDemo) {
+          const allowed = parsed.slice(0, tradesRemainingOnDemo);
+          setTrades((prev) => [...allowed, ...prev]);
+          openPaywall(
+            `Demo cap reached: Imported ${allowed.length} trades (${parsed.length - allowed.length} omitted). Upgrade to Pro for unlimited statements.`
+          );
+          return {
+            success: true,
+            count: allowed.length,
+            error: `Capped at 25 trades on Demo tier. ${parsed.length - allowed.length} trades omitted.`,
+          };
+        }
+      }
+
       setTrades((prev) => [...parsed, ...prev]);
       return { success: true, count: parsed.length };
     }
@@ -574,9 +639,19 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
         // 3. Automatically import and merge scanned trades
         if (scanResult.scannedTrades && scanResult.scannedTrades.length > 0) {
+          const tradesToImport = !isFullAccess
+            ? scanResult.scannedTrades.slice(0, tradesRemainingOnDemo)
+            : scanResult.scannedTrades;
+
+          if (!isFullAccess && scanResult.scannedTrades.length > tradesRemainingOnDemo) {
+            openPaywall(
+              `Account Scanner quota: Imported ${tradesToImport.length} of ${scanResult.scannedTrades.length} trades (25-trade Demo cap). Upgrade to Pro for unlimited live gateway sync.`
+            );
+          }
+
           setTrades((prev) => {
             const existingIds = new Set(prev.map((t) => t.id));
-            const newTrades = scanResult.scannedTrades.filter((t) => !existingIds.has(t.id));
+            const newTrades = tradesToImport.filter((t) => !existingIds.has(t.id));
             const combined = [...newTrades, ...prev];
             if (typeof window !== "undefined") {
               localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(combined));
@@ -588,7 +663,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           if (user) {
             const supabase = createClient();
             if (supabase) {
-              const rows = scanResult.scannedTrades.map((t) => ({
+              const rows = tradesToImport.map((t) => ({
                 user_id: user.id,
                 ticker: t.ticker,
                 asset_class: t.assetClass.toUpperCase(),
@@ -824,6 +899,13 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         updatePlaybookStrategy,
         deletePlaybookStrategy,
         resetDefaultStrategies,
+        isPaywallOpen,
+        paywallReason,
+        openPaywall,
+        closePaywall,
+        canLogTrade,
+        maxDemoTrades: MAX_DEMO_TRADES,
+        tradesRemainingOnDemo,
       }}
     >
       {children}

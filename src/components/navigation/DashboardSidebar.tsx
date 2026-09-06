@@ -16,9 +16,11 @@ import {
   Shield,
   ArrowUpRight,
   X,
+  Sparkles,
 } from "lucide-react";
 import { useTrades } from "@/context/TradeContext";
 import { SynapsesLogo } from "../brand/SynapsesLogo";
+import { SubscriptionBadge } from "../monetization/SubscriptionBadge";
 
 interface DashboardSidebarProps {
   onOpenTradeModal: () => void;
@@ -34,7 +36,7 @@ export function DashboardSidebar({
   onClose,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const { brokerAccounts, selectedAccount, setSelectedAccount } = useTrades();
+  const { brokerAccounts, selectedAccount, setSelectedAccount, openPaywall } = useTrades();
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const navItems = [
@@ -186,13 +188,18 @@ export function DashboardSidebar({
           )}
         </div>
 
+        {/* Subscription & 7-Week Trial Telemetry Badge */}
+        <div className="mt-2.5">
+          <SubscriptionBadge variant="pill" className="w-full" />
+        </div>
+
         {/* Quick Log Trade CTA */}
         <button
           onClick={() => {
             if (isMobile) onClose?.();
             onOpenTradeModal();
           }}
-          className="w-full mt-3 synapses-pill-btn py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200"
+          className="w-full mt-2.5 synapses-pill-btn py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200"
         >
           <PlusCircle className="w-4 h-4 text-black" />
           <span>Log New Trade</span>
@@ -238,8 +245,25 @@ export function DashboardSidebar({
         })}
 
         <div className="pt-4 px-2 py-1 text-[10px] font-mono tracking-wider text-zinc-500 uppercase">
-          INTEGRATIONS & GATEWAYS
+          INTEGRATIONS & MONETIZATION
         </div>
+
+        {/* Pro Tier & 7-Week Trial Paywall Trigger */}
+        <button
+          onClick={() => {
+            if (isMobile) onClose?.();
+            openPaywall("Upgrade to Institutional Pro to unlock unlimited execution logs, automated broker gateways, and advanced quantitative analytics.");
+          }}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-emerald-400 hover:text-white hover:bg-emerald-500/10 hover:translate-x-0.5 transition-all group cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-all duration-150" />
+            <span>Pro Tier & 7-Wk Trial</span>
+          </div>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+            Paywall
+          </span>
+        </button>
 
         {/* Broker Sync Modal Trigger */}
         <button

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { SubscriptionTier, PaymentProvider } from "@/lib/types";
 
 export interface TraderProfile {
   id: string;
@@ -16,6 +17,12 @@ export interface TraderProfile {
   max_risk_pct: number;
   daily_drawdown_limit_pct: number;
   has_completed_onboarding: boolean;
+  subscription_tier?: SubscriptionTier;
+  trial_started_at?: string;
+  trial_ends_at?: string;
+  subscription_id?: string;
+  customer_id?: string;
+  payment_provider?: PaymentProvider;
 }
 
 export interface OnboardingData {
@@ -29,12 +36,25 @@ export interface OnboardingData {
   primary_platform?: string;
 }
 
+export interface SubscriptionContextInfo {
+  tier: SubscriptionTier;
+  isPro: boolean;
+  isTrialActive: boolean;
+  trialDaysRemaining: number;
+  trialEndsAt: string;
+  isDemoCapped: boolean;
+  paymentProvider?: PaymentProvider;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: TraderProfile | null;
   isLoading: boolean;
   isSupabaseLive: boolean;
+  subscription: SubscriptionContextInfo;
+  refreshProfile: () => Promise<void>;
+  updateSubscription: (tier: SubscriptionTier, provider?: PaymentProvider, subId?: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
   signUpWithEmail: (
     email: string,
@@ -63,6 +83,9 @@ const DEMO_PROFILE: TraderProfile = {
   max_risk_pct: 1.0,
   daily_drawdown_limit_pct: 4.0,
   has_completed_onboarding: true,
+  subscription_tier: "trial",
+  trial_started_at: new Date().toISOString(),
+  trial_ends_at: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000).toISOString(),
 };
 
 const LOCAL_STORAGE_AUTH_KEY = "synapses_auth_user_v1";
@@ -444,6 +467,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   };
 
+  const refreshProfile = useCallback(async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  }, [user?.id, fetchProfile]);
+
+  const updateSubscription = async (tier: SubscriptionTier, provider?: PaymentProvider, subId?: string) => {
+    const updated: TraderProfile = {
+      ...(profile || DEMO_PROFILE),
+      subscription_tier: tier,
+      payment_provider: provider,
+      subscription_id: subId || profile?.subscription_id,
+    };
+    setProfile(updated);
+
+    const supabase = createClient();
+    if (supabase && user) {
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            subscription_tier: tier,
+            payment_provider: provider,
+            subscription_id: subId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+      } catch (e) {
+        console.warn("Failed to persist subscription update to Supabase:", e);
+      }
+    } else if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOCAL_STORAGE_AUTH_KEY,
+        JSON.stringify({ user, profile: updated })
+      );
+    }
+  };
+
+  // Compute 7-Week Trial & Subscription Status Telemetry
+  const now = Date.now();
+  const rawTier: SubscriptionTier = profile?.subscription_tier || "trial";
+  const trialEndsAt = profile?.trial_ends_at || new Date(now + 49 * 24 * 60 * 60 * 1000).toISOString();
+  const trialDiff = new Date(trialEndsAt).getTime() - now;
+  const trialDaysRemaining = Math.max(0, Math.ceil(trialDiff / (1000 * 60 * 60 * 24)));
+  const isPro = rawTier === "pro";
+  const isTrialActive = rawTier === "trial" && trialDaysRemaining > 0;
+  const isDemoCapped = rawTier === "demo" || (rawTier === "trial" && trialDaysRemaining === 0 && !isPro);
+
+  const subscription: SubscriptionContextInfo = {
+    tier: rawTier,
+    isPro,
+    isTrialActive,
+    trialDaysRemaining,
+    trialEndsAt,
+    isDemoCapped,
+    paymentProvider: profile?.payment_provider,
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -452,6 +533,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         isLoading,
         isSupabaseLive: isSupabaseConfigured,
+        subscription,
+        refreshProfile,
+        updateSubscription,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,

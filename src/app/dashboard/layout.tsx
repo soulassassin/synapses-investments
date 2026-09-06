@@ -19,6 +19,8 @@ import { BrokerSyncModal } from "@/components/navigation/BrokerSyncModal";
 import { TradeLogModal } from "@/components/trading/TradeLogModal";
 import { TradeDetailModal } from "@/components/trading/TradeDetailModal";
 import { CSVImportModal } from "@/components/trading/CSVImportModal";
+import { PaywallModal } from "@/components/monetization/PaywallModal";
+import { SubscriptionBadge } from "@/components/monetization/SubscriptionBadge";
 import { SynapsesLogo } from "@/components/brand/SynapsesLogo";
 import { Trade } from "@/lib/types";
 
@@ -75,6 +77,7 @@ export default function DashboardLayout({
             </Link>
           </div>
           <div className="flex items-center gap-2">
+            <SubscriptionBadge variant="compact" />
             <button
               onClick={() => setIsSyncModalOpen(true)}
               className="p-2 rounded-xl bg-white/[0.05] border border-white/10 text-zinc-300 hover:text-white"
@@ -160,6 +163,8 @@ export default function DashboardLayout({
       </div>
 
       {/* Global Modals */}
+      <PaywallModal />
+
       <BrokerSyncModal
         isOpen={isSyncModalOpen}
         onClose={() => setIsSyncModalOpen(false)}

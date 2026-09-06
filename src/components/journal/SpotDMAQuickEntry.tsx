@@ -43,7 +43,7 @@ const DEFAULT_SETUPS = [
 
 export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryProps) {
   const { getTicker } = useDMAContext();
-  const { addTrade, brokerAccounts, playbookStrategies, selectedAccount } = useTrades();
+  const { addTrade, brokerAccounts, playbookStrategies, selectedAccount, canLogTrade, openPaywall } = useTrades();
 
   const [symbol, setSymbol] = useState("NAS100");
   const [direction, setDirection] = useState<TradeDirection>("LONG");
@@ -115,6 +115,11 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
   const handleExecuteTrade = () => {
     if (entryPrice <= 0 || stopLoss <= 0 || takeProfit <= 0) {
       setFeedbackToast("Please enter valid price levels.");
+      return;
+    }
+
+    if (!canLogTrade) {
+      openPaywall("Demo tier limit reached (25 trades capped). Upgrade to Institutional Pro to execute Spot DMA orders.");
       return;
     }
 
