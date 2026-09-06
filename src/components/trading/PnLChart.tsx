@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { PnLPoint } from "@/hooks/useTradeMetrics";
 import { GlassCard } from "../glass/GlassCard";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 interface PnLChartProps {
   data: PnLPoint[];
@@ -13,10 +13,21 @@ export function PnLChart({ data }: PnLChartProps) {
   const [hoveredPoint, setHoveredPoint] = useState<PnLPoint | null>(null);
   const [chartMode, setChartMode] = useState<"CUMULATIVE" | "DRAWDOWN" | "TRADE_BARS">("CUMULATIVE");
 
-  if (!data || data.length === 0) {
+  // Check if there are real trades (more than just the baseline START point)
+  const hasRealTradePoints = data && data.filter((d) => d.tradeId !== "START").length > 0;
+
+  if (!data || data.length === 0 || !hasRealTradePoints) {
     return (
-      <GlassCard className="p-8 text-center text-zinc-400">
-        No trade data available to plot equity curve.
+      <GlassCard className="p-8 sm:p-12 text-center bg-black/85 backdrop-blur-2xl border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
+        <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center mx-auto text-white mb-3 shadow-[0_0_20px_rgba(255,255,255,0.08)]">
+          <Activity className="w-6 h-6 text-zinc-400" />
+        </div>
+        <h4 className="text-sm font-bold font-mono text-white tracking-wider uppercase">
+          Awaiting Execution Telemetry
+        </h4>
+        <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto leading-relaxed">
+          The quantitative equity curve, drawdown trajectory, and trade P&L bar graphs will render once trades are logged or imported into your execution vault.
+        </p>
       </GlassCard>
     );
   }

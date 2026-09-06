@@ -135,9 +135,31 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Main Breakdown Section */}
-      {activeTab === "SESSION" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {filteredTrades.length === 0 ? (
+        <GlassCard className="p-12 text-center max-w-lg mx-auto bg-black/80 border-white/10 space-y-4 my-8">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center mx-auto text-white">
+            <BarChart3 className="w-6 h-6 text-zinc-300" />
+          </div>
+          <div>
+            <h4 className="text-base font-bold font-mono text-white uppercase tracking-wider">
+              Awaiting Execution Records
+            </h4>
+            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Deep-dive analytics by session, day of week, setups, and asset class will automatically generate once trades are logged or imported into your execution vault.
+            </p>
+          </div>
+          <a
+            href="/dashboard/journal"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-black text-xs font-bold font-mono hover:bg-zinc-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          >
+            Open Execution Journal
+          </a>
+        </GlassCard>
+      ) : (
+        <>
+          {/* Main Breakdown Section */}
+          {activeTab === "SESSION" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {Object.entries(sessionStats).map(([sessionName, data]) => {
             const winRate = data.count > 0 ? Math.round((data.wins / data.count) * 100) : 0;
             const isProfit = data.pnl >= 0;
@@ -280,6 +302,8 @@ export default function AnalyticsPage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

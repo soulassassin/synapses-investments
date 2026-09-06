@@ -7,7 +7,7 @@ import { useTrades } from "@/context/TradeContext";
 import { useDMA } from "@/context/DMAContext";
 
 export function QuickTradeCapsule() {
-  const { addTrade } = useTrades();
+  const { addTrade, selectedAccount, brokerAccounts } = useTrades();
   const { tickers, getTicker } = useDMA();
   const [selectedTicker, setSelectedTicker] = useState("NAS100");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -72,7 +72,7 @@ export function QuickTradeCapsule() {
         postTradeState: "Satisfied",
         notes: `Instant DMA execution for ${activeTicker.symbol} at ${price}.`,
       },
-      account: "Apex Prop 100K Fund",
+      account: selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account"),
     });
   };
 

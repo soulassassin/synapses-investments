@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { Trade, FilterOptions, BrokerAccount, MetricStats, PlaybookStrategy } from "@/lib/types";
-import { initialTrades, initialBrokerAccounts, initialPlaybookStrategies } from "@/lib/mockTrades";
+import { initialTrades, initialBrokerAccounts, initialPlaybookStrategies, isLegacyMockTrade } from "@/lib/mockTrades";
 import { useTradeMetrics, PnLPoint } from "@/hooks/useTradeMetrics";
+import { useAuth } from "@/context/AuthContext";
+import { createClient } from "@/lib/supabase/client";
 
 export interface CurrentMetrics extends MetricStats {
   pnlCurve: PnLPoint[];
@@ -23,12 +25,23 @@ interface TradeContextType {
   updateTrade: (id: string, updated: Partial<Trade>) => void;
   deleteTrade: (id: string) => void;
   importTrades: (newTrades: Trade[]) => void;
-  importFromCSV: (csvText: string) => void;
+  importFromCSV: (csvText: string, targetAccount?: string) => { success: boolean; count: number; error?: string };
   resetSampleData: () => void;
+  clearAllTrades: () => void;
+  clearAllData: () => void;
   brokerAccounts: BrokerAccount[];
   selectedAccount: string;
   setSelectedAccount: (acc: string) => void;
-  connectBroker: (platform: BrokerAccount["platform"], name: string, accountNumber: string) => void;
+  connectBroker: (
+    platform: BrokerAccount["platform"],
+    name: string,
+    accountNumber: string,
+    server?: string,
+    balance?: number,
+    currency?: string,
+    status?: "Connected" | "Syncing" | "Disconnected"
+  ) => BrokerAccount;
+  disconnectBroker: (id: string) => void;
   exportToCSV: () => void;
   // Playbook Custom Strategies CRUD
   playbookStrategies: PlaybookStrategy[];
@@ -57,6 +70,7 @@ const LOCAL_STORAGE_ACCOUNTS_KEY = "synapses_journal_accounts_v1";
 const LOCAL_STORAGE_PLAYBOOK_KEY = "synapses_journal_playbook_v1";
 
 export function TradeProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const [brokerAccounts, setBrokerAccounts] = useState<BrokerAccount[]>(initialBrokerAccounts);
   const [playbookStrategies, setPlaybookStrategies] = useState<PlaybookStrategy[]>(initialPlaybookStrategies);
@@ -64,7 +78,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from LocalStorage (with legacy key fallback & safe sanitization)
+  // Load from LocalStorage and Supabase, filtering out any legacy placeholder mock data
   useEffect(() => {
     try {
       if (typeof window !== "undefined") {
@@ -72,53 +86,79 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         if (savedTrades) {
           const parsed = JSON.parse(savedTrades);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const sanitized: Trade[] = parsed.map((t: any, idx: number) => ({
-              id: t.id || `TRD-RESTORED-${idx}`,
-              ticker: t.ticker || "NAS100",
-              assetClass: t.assetClass || "Indices",
-              direction: t.direction || "LONG",
-              entryDate: t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
-              exitDate: t.exitDate || t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
-              session: t.session || "New York",
-              entryPrice: Number(t.entryPrice) || 0,
-              exitPrice: Number(t.exitPrice) || 0,
-              stopLoss: Number(t.stopLoss) || 0,
-              takeProfit: t.takeProfit !== undefined ? Number(t.takeProfit) : undefined,
-              positionSize: Number(t.positionSize) || 1,
-              grossPnL: Number(t.grossPnL) || 0,
-              netPnL: Number(t.netPnL) || 0,
-              commission: Number(t.commission) || 0,
-              swap: Number(t.swap) || 0,
-              slippagePips: Number(t.slippagePips) || 0,
-              spreadPips: Number(t.spreadPips) || 0,
-              rMultiple: Number(t.rMultiple) || 0,
-              strategy: t.strategy || "Macro Range Expansion",
-              setup: t.setup || "Fair Value Gap",
-              mistakeTags: Array.isArray(t.mistakeTags) ? t.mistakeTags : [],
-              marketCondition: t.marketCondition || "Trending Bullish",
-              emotion: t.emotion || {
-                confidence: 5,
-                stress: 1,
-                discipline: 5,
-                preTradeState: "Focused",
-                postTradeState: "Satisfied",
-              },
-              timeframe: t.timeframe || "5m",
-              chartScreenshot: t.chartScreenshot || (Array.isArray(t.chartScreenshots) && t.chartScreenshots[0]) || undefined,
-              chartScreenshots: Array.isArray(t.chartScreenshots) ? t.chartScreenshots : (t.chartScreenshot ? [t.chartScreenshot] : []),
-              notes: t.notes || "",
-              account: t.account || "Apex Prop 100K Fund",
-            }));
-            setTrades(sanitized);
+            // Filter out any legacy mock trades so user starts with a clean slate
+            const realTradesOnly = parsed.filter((t: any) => !isLegacyMockTrade(t));
+            if (realTradesOnly.length > 0) {
+              const sanitized: Trade[] = realTradesOnly.map((t: any, idx: number) => ({
+                id: t.id || `TRD-RESTORED-${idx}`,
+                ticker: t.ticker || "NAS100",
+                assetClass: t.assetClass || "Indices",
+                direction: t.direction || "LONG",
+                entryDate: t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
+                exitDate: t.exitDate || t.entryDate || new Date().toISOString().replace("T", " ").slice(0, 16),
+                session: t.session || "New York",
+                entryPrice: Number(t.entryPrice) || 0,
+                exitPrice: Number(t.exitPrice) || 0,
+                stopLoss: Number(t.stopLoss) || 0,
+                takeProfit: t.takeProfit !== undefined ? Number(t.takeProfit) : undefined,
+                positionSize: Number(t.positionSize) || 1,
+                grossPnL: Number(t.grossPnL) || 0,
+                netPnL: Number(t.netPnL) || 0,
+                commission: Number(t.commission) || 0,
+                swap: Number(t.swap) || 0,
+                slippagePips: Number(t.slippagePips) || 0,
+                spreadPips: Number(t.spreadPips) || 0,
+                rMultiple: Number(t.rMultiple) || 0,
+                strategy: t.strategy || "Discretionary Model",
+                setup: t.setup || "Market Structure",
+                mistakeTags: Array.isArray(t.mistakeTags) ? t.mistakeTags : [],
+                marketCondition: t.marketCondition || "Trending Bullish",
+                emotion: t.emotion || {
+                  confidence: 5,
+                  stress: 1,
+                  discipline: 5,
+                  preTradeState: "Focused",
+                  postTradeState: "Satisfied",
+                },
+                timeframe: t.timeframe || "5m",
+                chartScreenshot: t.chartScreenshot || (Array.isArray(t.chartScreenshots) && t.chartScreenshots[0]) || undefined,
+                chartScreenshots: Array.isArray(t.chartScreenshots) ? t.chartScreenshots : (t.chartScreenshot ? [t.chartScreenshot] : []),
+                notes: t.notes || "",
+                account: t.account || "Primary Account",
+              }));
+              setTrades(sanitized);
+            } else {
+              setTrades([]);
+              localStorage.removeItem(LOCAL_STORAGE_KEY);
+            }
           }
+        } else {
+          setTrades([]);
         }
+
         const savedAccounts = localStorage.getItem(LOCAL_STORAGE_ACCOUNTS_KEY) || localStorage.getItem("synapses_tradezilla_accounts_v1");
         if (savedAccounts) {
           const parsedAccs = JSON.parse(savedAccounts);
           if (Array.isArray(parsedAccs) && parsedAccs.length > 0) {
-            setBrokerAccounts(parsedAccs);
+            // Remove mock accounts (Apex Prop 100K Fund, IC Markets, Interactive Brokers with acc-1/2/3)
+            const realAccountsOnly = parsedAccs.filter(
+              (acc: any) =>
+                acc.id !== "acc-1" &&
+                acc.id !== "acc-2" &&
+                acc.id !== "acc-3" &&
+                acc.name !== "Apex Prop 100K Fund"
+            );
+            if (realAccountsOnly.length > 0) {
+              setBrokerAccounts(realAccountsOnly);
+            } else {
+              setBrokerAccounts([]);
+              localStorage.removeItem(LOCAL_STORAGE_ACCOUNTS_KEY);
+            }
           }
+        } else {
+          setBrokerAccounts([]);
         }
+
         const savedPlaybook = localStorage.getItem(LOCAL_STORAGE_PLAYBOOK_KEY);
         if (savedPlaybook) {
           const parsedPlaybook = JSON.parse(savedPlaybook);
@@ -166,11 +206,40 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
 
   const addTrade = (tradeData: Omit<Trade, "id">) => {
+    const fallbackAcc = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account");
     const newTrade: Trade = {
       ...tradeData,
-      id: `TRD-${Date.now().toString().slice(-4)}`,
+      id: `TRD-${Date.now().toString().slice(-6)}`,
+      account: tradeData.account || fallbackAcc,
     };
     setTrades((prev) => [newTrade, ...prev]);
+
+    // Async sync to Supabase if session active
+    if (user) {
+      const supabase = createClient();
+      if (supabase) {
+        supabase.from("trades").insert({
+          user_id: user.id,
+          ticker: newTrade.ticker,
+          asset_class: (newTrade.assetClass || "Indices").toUpperCase(),
+          direction: newTrade.direction,
+          entry_price: newTrade.entryPrice,
+          exit_price: newTrade.exitPrice,
+          stop_loss: newTrade.stopLoss,
+          take_profit: newTrade.takeProfit,
+          quantity: newTrade.positionSize,
+          pnl: newTrade.netPnL,
+          pnl_r: newTrade.rMultiple,
+          outcome: newTrade.netPnL >= 0 ? "WIN" : "LOSS",
+          strategy: newTrade.strategy,
+          setup: newTrade.setup,
+          session: newTrade.session,
+          notes: newTrade.notes,
+        }).then(({ error }) => {
+          if (error) console.warn("Supabase trade sync:", error);
+        });
+      }
+    }
   };
 
   const updateTrade = (id: string, updated: Partial<Trade>) => {
@@ -181,15 +250,49 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTrade = (id: string) => {
     setTrades((prev) => prev.filter((t) => t.id !== id));
+    if (user) {
+      const supabase = createClient();
+      if (supabase) {
+        supabase.from("trades").delete().eq("user_id", user.id).eq("id", id).then();
+      }
+    }
+  };
+
+  const clearAllTrades = () => {
+    setTrades([]);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem("synapses_tradezilla_trades_v1");
+    }
+    if (user) {
+      const supabase = createClient();
+      if (supabase) {
+        supabase.from("trades").delete().eq("user_id", user.id).then();
+      }
+    }
+  };
+
+  const clearAllData = () => {
+    setTrades([]);
+    setBrokerAccounts([]);
+    setSelectedAccount("ALL");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_ACCOUNTS_KEY);
+      localStorage.removeItem("synapses_tradezilla_trades_v1");
+      localStorage.removeItem("synapses_tradezilla_accounts_v1");
+    }
   };
 
   const importTrades = (newTrades: Trade[]) => {
     setTrades((prev) => [...newTrades, ...prev]);
   };
 
-  const importFromCSV = (csvText: string) => {
+  const importFromCSV = (csvText: string, targetAccount?: string): { success: boolean; count: number; error?: string } => {
     const lines = csvText.trim().split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
-    if (lines.length <= 1) return;
+    if (lines.length <= 1) {
+      return { success: false, count: 0, error: "CSV statement is empty or missing data rows" };
+    }
 
     // Header row normalization
     const headerRow = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/[\"\']/g, ""));
@@ -220,10 +323,10 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     const notesIdx = findIndex(["notes", "comment", "reflections"]);
     const accountIdx = findIndex(["account", "accountnumber", "broker", "fund"]);
 
+    const fallbackAccount = targetAccount || (selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account"));
     const parsed: Trade[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      // Split with quotes support
       const row = lines[i].split(",").map((c) => c.trim().replace(/^["']|["']$/g, ""));
       if (row.length < 2) continue;
 
@@ -260,11 +363,11 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       const exitDate = exitDateIdx !== -1 && row[exitDateIdx] ? row[exitDateIdx] : entryDate;
       const session = (sessionIdx !== -1 ? row[sessionIdx] : row[5]) as any || "New York";
       const assetClass = (assetClassIdx !== -1 ? row[assetClassIdx] : row[1]) as any || "Indices";
-      const strategy = strategyIdx !== -1 && row[strategyIdx] ? row[strategyIdx] : "Macro Range Expansion";
-      const setup = setupIdx !== -1 && row[setupIdx] ? row[setupIdx] : "Fair Value Gap";
+      const strategy = strategyIdx !== -1 && row[strategyIdx] ? row[strategyIdx] : "Discretionary Model";
+      const setup = setupIdx !== -1 && row[setupIdx] ? row[setupIdx] : "Market Structure";
       const mistakeTags = mistakeTagsIdx !== -1 && row[mistakeTagsIdx] ? row[mistakeTagsIdx].split(";").map((s) => s.trim()).filter(Boolean) : [];
       const notes = notesIdx !== -1 ? row[notesIdx] : "";
-      const account = accountIdx !== -1 && row[accountIdx] ? row[accountIdx] : "Apex Prop 100K Fund";
+      const account = accountIdx !== -1 && row[accountIdx] ? row[accountIdx] : fallbackAccount;
 
       parsed.push({
         id: `CSV-${Date.now().toString().slice(-4)}-${i}`,
@@ -304,13 +407,23 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
     if (parsed.length > 0) {
       setTrades((prev) => [...parsed, ...prev]);
+      return { success: true, count: parsed.length };
     }
+
+    return { success: true, count: 0, error: "No valid trades recognized in statement file" };
   };
 
   const resetSampleData = () => {
-    setTrades(initialTrades);
-    setBrokerAccounts(initialBrokerAccounts);
+    setTrades([]);
+    setBrokerAccounts([]);
+    setSelectedAccount("ALL");
     setPlaybookStrategies(initialPlaybookStrategies);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_ACCOUNTS_KEY);
+      localStorage.removeItem("synapses_tradezilla_trades_v1");
+      localStorage.removeItem("synapses_tradezilla_accounts_v1");
+    }
   };
 
   const addPlaybookStrategy = (stratData: Omit<PlaybookStrategy, "id" | "createdAt">) => {
@@ -340,19 +453,76 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     setFilters(defaultFilters);
   };
 
-  const connectBroker = (platform: BrokerAccount["platform"], name: string, accountNumber: string) => {
+  const connectBroker = (
+    platform: BrokerAccount["platform"],
+    name: string,
+    accountNumber: string,
+    server?: string,
+    balance?: number,
+    currency?: string,
+    status?: "Connected" | "Syncing" | "Disconnected"
+  ): BrokerAccount => {
+    const cleanName = name?.trim() || `${platform} Sync Account`;
+    const startingBal = typeof balance === "number" && !isNaN(balance) ? balance : 100000;
     const newAccount: BrokerAccount = {
       id: `acc-${Date.now()}`,
-      name: name || `${platform} Sync Account`,
+      name: cleanName,
       platform,
-      accountNumber: accountNumber || `ACC-${Math.floor(100000 + Math.random() * 900000)}`,
-      server: `${platform}-Live-Server`,
-      status: "Connected",
-      balance: 100000,
-      equity: 100000,
-      lastSync: "Just now",
+      accountNumber: accountNumber?.trim() || `ACC-${Math.floor(100000 + Math.random() * 900000)}`,
+      server: server?.trim() || `${platform}-Live-Feed`,
+      status: status || "Connected",
+      balance: startingBal,
+      equity: startingBal,
+      currency: currency || "USD",
+      lastSync: "Just now (Live)",
+      webhookUrl: platform === "TradingView" ? `https://synapses-investments.vercel.app/api/webhook/trade?acc=${encodeURIComponent(cleanName)}` : undefined,
+      webhookSecret: platform === "TradingView" ? `sn_wh_${Math.random().toString(36).substring(2, 12)}` : undefined,
     };
-    setBrokerAccounts((prev) => [newAccount, ...prev]);
+
+    setBrokerAccounts((prev) => {
+      const existingIdx = prev.findIndex((a) => a.name.toLowerCase() === newAccount.name.toLowerCase());
+      if (existingIdx >= 0) {
+        const updated = [...prev];
+        updated[existingIdx] = newAccount;
+        return updated;
+      }
+      return [newAccount, ...prev];
+    });
+    setSelectedAccount(newAccount.name);
+
+    if (user) {
+      const supabase = createClient();
+      if (supabase) {
+        supabase.from("broker_accounts").insert({
+          user_id: user.id,
+          name: newAccount.name,
+          platform: newAccount.platform,
+          account_number: newAccount.accountNumber,
+          balance: newAccount.balance,
+          initial_balance: newAccount.balance,
+          currency: newAccount.currency || "USD",
+          status: newAccount.status,
+        }).then(({ error }) => {
+          if (error) console.warn("Supabase broker_accounts sync:", error);
+        });
+      }
+    }
+
+    return newAccount;
+  };
+
+  const disconnectBroker = (id: string) => {
+    const accToDelete = brokerAccounts.find((a) => a.id === id);
+    setBrokerAccounts((prev) => prev.filter((a) => a.id !== id));
+    if (accToDelete && selectedAccount === accToDelete.name) {
+      setSelectedAccount("ALL");
+    }
+    if (user && accToDelete) {
+      const supabase = createClient();
+      if (supabase) {
+        supabase.from("broker_accounts").delete().eq("user_id", user.id).eq("name", accToDelete.name).then();
+      }
+    }
   };
 
   const exportToCSV = () => {
@@ -497,10 +667,13 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         importTrades,
         importFromCSV,
         resetSampleData,
+        clearAllTrades,
+        clearAllData,
         brokerAccounts,
         selectedAccount,
         setSelectedAccount,
         connectBroker,
+        disconnectBroker,
         exportToCSV,
         playbookStrategies,
         addPlaybookStrategy,

@@ -162,13 +162,27 @@ export interface BacktestPosition {
 export interface BrokerAccount {
   id: string;
   name: string;
-  platform: "MetaTrader 5" | "MetaTrader 4" | "cTrader" | "TradingView" | "NinjaTrader" | "Interactive Brokers";
+  platform:
+    | "MetaTrader 5"
+    | "MetaTrader 4"
+    | "cTrader"
+    | "TradingView"
+    | "NinjaTrader"
+    | "Interactive Brokers"
+    | "TradeLocker"
+    | "DXtrade"
+    | "Prop Firm Account"
+    | "Manual Gateway"
+    | string;
   accountNumber: string;
   server: string;
   status: "Connected" | "Syncing" | "Disconnected";
   balance: number;
   equity: number;
+  currency?: string;
   lastSync: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
 }
 
 export interface PlaybookStrategy {

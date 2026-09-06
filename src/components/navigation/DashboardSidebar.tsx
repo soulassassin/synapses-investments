@@ -70,7 +70,7 @@ export function DashboardSidebar({
     },
   ];
 
-  const currentAcc = brokerAccounts.find((a) => a.name === selectedAccount) || brokerAccounts[0];
+  const currentAcc = brokerAccounts.find((a) => a.name === selectedAccount) || brokerAccounts[0] || null;
 
   const renderContent = (isMobile: boolean) => (
     <>
@@ -98,15 +98,17 @@ export function DashboardSidebar({
             className="w-full p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-white/30 transition-all flex items-center justify-between text-left"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#22C55E] shrink-0 animate-pulse" />
+              <div className={`w-2 h-2 rounded-full shrink-0 ${currentAcc || selectedAccount === "ALL" ? "bg-emerald-400 shadow-[0_0_8px_#22C55E] animate-pulse" : "bg-amber-400"}`} />
               <div className="truncate">
                 <span className="text-xs font-semibold text-white block truncate">
-                  {selectedAccount === "ALL" ? "All Accounts Consolidated" : currentAcc.name}
-                </span>
-                <span className="text-[10px] font-mono text-zinc-400 block">
                   {selectedAccount === "ALL"
-                    ? "3 Connected Feeds"
-                    : `${currentAcc.platform} • ${currentAcc.accountNumber}`}
+                    ? (brokerAccounts.length > 0 ? "All Accounts Consolidated" : "Primary Workspace")
+                    : (currentAcc ? currentAcc.name : "No Account Connected")}
+                </span>
+                <span className="text-[10px] font-mono text-zinc-400 block truncate">
+                  {selectedAccount === "ALL"
+                    ? `${brokerAccounts.length} Connected Feeds`
+                    : (currentAcc ? `${currentAcc.platform} • ${currentAcc.accountNumber}` : "Click to connect broker")}
                 </span>
               </div>
             </div>
@@ -135,30 +137,50 @@ export function DashboardSidebar({
                   <span>All Accounts Consolidated</span>
                   <span className="text-[10px] font-mono text-zinc-500">Merged</span>
                 </button>
-                {brokerAccounts.map((acc) => (
-                  <button
-                    key={acc.id}
-                    onClick={() => {
-                      setSelectedAccount(acc.name);
-                      setIsAccountDropdownOpen(false);
-                    }}
-                    className={`w-full text-left p-2 rounded-lg text-xs transition-colors flex items-center justify-between ${
-                      selectedAccount === acc.name
-                        ? "bg-white/15 text-white font-bold"
-                        : "text-zinc-300 hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <div className="truncate pr-2">
-                      <span className="block truncate font-medium">{acc.name}</span>
-                      <span className="text-[10px] text-zinc-500 font-mono">
-                        {acc.platform}
+
+                {brokerAccounts.length === 0 ? (
+                  <div className="p-3 text-center text-[11px] font-mono text-zinc-500">
+                    No trading accounts connected yet.
+                  </div>
+                ) : (
+                  brokerAccounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      onClick={() => {
+                        setSelectedAccount(acc.name);
+                        setIsAccountDropdownOpen(false);
+                      }}
+                      className={`w-full text-left p-2 rounded-lg text-xs transition-colors flex items-center justify-between ${
+                        selectedAccount === acc.name
+                          ? "bg-white/15 text-white font-bold"
+                          : "text-zinc-300 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <div className="truncate pr-2">
+                        <span className="block truncate font-medium">{acc.name}</span>
+                        <span className="text-[10px] text-zinc-500 font-mono">
+                          {acc.platform} • {acc.accountNumber}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-emerald-400 font-bold shrink-0">
+                        ${acc.balance.toLocaleString()}
                       </span>
-                    </div>
-                    <span className="text-[11px] font-mono text-emerald-400 font-bold">
-                      ${acc.balance.toLocaleString()}
-                    </span>
+                    </button>
+                  ))
+                )}
+
+                <div className="pt-1 mt-1 border-t border-white/10">
+                  <button
+                    onClick={() => {
+                      setIsAccountDropdownOpen(false);
+                      onOpenSyncModal();
+                    }}
+                    className="w-full text-left p-2 rounded-lg text-xs font-mono font-semibold text-cyan-400 hover:bg-cyan-500/10 transition-colors flex items-center gap-1.5"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    <span>+ Connect Trading Account</span>
                   </button>
-                ))}
+                </div>
               </div>
             </>
           )}

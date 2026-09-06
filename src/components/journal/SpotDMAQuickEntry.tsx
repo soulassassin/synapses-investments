@@ -122,7 +122,7 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
 
     const now = new Date();
     const dateStr = now.toISOString().replace("T", " ").slice(0, 16);
-    const accountName = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Apex Prop 100K Fund");
+    const accountName = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account");
 
     // Create trade log
     const newTrade: Omit<Trade, "id"> = {

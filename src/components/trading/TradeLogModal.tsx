@@ -21,7 +21,7 @@ interface TradeLogModalProps {
 }
 
 export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalProps) {
-  const { addTrade, updateTrade, brokerAccounts, playbookStrategies } = useTrades();
+  const { addTrade, updateTrade, brokerAccounts, playbookStrategies, selectedAccount } = useTrades();
 
   const [ticker, setTicker] = useState("NAS100");
   const [assetClass, setAssetClass] = useState<AssetClass>("Indices");
@@ -47,7 +47,7 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
   const [preTradeState, setPreTradeState] = useState<any>("Focused");
   const [postTradeState, setPostTradeState] = useState<any>("Satisfied");
   const [notes, setNotes] = useState("");
-  const [account, setAccount] = useState("Apex Prop 100K Fund");
+  const [account, setAccount] = useState("");
   const [timeframe, setTimeframe] = useState("5m");
   const [screenshots, setScreenshots] = useState<string[]>([]);
 
@@ -63,6 +63,7 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
   ];
 
   useEffect(() => {
+    const defaultAcc = selectedAccount !== "ALL" ? selectedAccount : (brokerAccounts[0]?.name || "Primary Account");
     if (tradeToEdit) {
       setTicker(tradeToEdit.ticker);
       setAssetClass(tradeToEdit.assetClass);
@@ -87,7 +88,7 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
       setPreTradeState(tradeToEdit.emotion?.preTradeState || "Focused");
       setPostTradeState(tradeToEdit.emotion?.postTradeState || "Satisfied");
       setNotes(tradeToEdit.notes || "");
-      setAccount(tradeToEdit.account || "Apex Prop 100K Fund");
+      setAccount(tradeToEdit.account || defaultAcc);
       setTimeframe(tradeToEdit.timeframe || "5m");
       const existingScreenshots = tradeToEdit.chartScreenshots && tradeToEdit.chartScreenshots.length > 0
         ? tradeToEdit.chartScreenshots
@@ -98,9 +99,10 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
       const dateStr = now.toISOString().replace("T", " ").slice(0, 16);
       setEntryDate(dateStr);
       setExitDate(dateStr);
+      setAccount(defaultAcc);
       setScreenshots([]);
     }
-  }, [tradeToEdit, isOpen]);
+  }, [tradeToEdit, isOpen, selectedAccount, brokerAccounts]);
 
   const handleImageFiles = (files: FileList | File[]) => {
     Array.from(files).forEach((file) => {
@@ -409,17 +411,22 @@ export function TradeLogModal({ isOpen, onClose, tradeToEdit }: TradeLogModalPro
             </div>
 
             <div>
-              <label className="text-[11px] text-zinc-400 block mb-1">Account</label>
+              <label className="text-[11px] text-zinc-400 block mb-1">Trading Account</label>
               <select
                 value={account}
                 onChange={(e) => setAccount(e.target.value)}
-                className="w-full glass-input px-3 py-1.5 rounded-xl text-xs"
+                className="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono text-white cursor-pointer"
               >
                 {brokerAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.name}>
-                    {acc.name}
+                  <option key={acc.id} value={acc.name} className="bg-zinc-950 text-white">
+                    {acc.name} ({acc.platform})
                   </option>
                 ))}
+                {(!brokerAccounts.some((a) => a.name === account) || brokerAccounts.length === 0) && (
+                  <option value={account || "Primary Account"} className="bg-zinc-950 text-white">
+                    {account || "Primary Account"}
+                  </option>
+                )}
               </select>
             </div>
           </div>

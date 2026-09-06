@@ -44,7 +44,7 @@ export function TradeDetailModal({ trade, isOpen, onClose, onEdit }: TradeDetail
       isOpen={isOpen}
       onClose={onClose}
       title={`${trade.ticker} • ${trade.direction} Execution Report`}
-      subtitle={`Trade ID: #${trade.id} • ${trade.account || "Apex Prop 100K Fund"}`}
+      subtitle={`Trade ID: #${trade.id} • ${trade.account || "Connected Account"}`}
       maxWidth="2xl"
     >
       <div className="space-y-6">

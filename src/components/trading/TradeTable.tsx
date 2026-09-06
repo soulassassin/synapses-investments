@@ -24,6 +24,9 @@ import {
   ChevronRight,
   Filter,
   Check,
+  PlusCircle,
+  Radio,
+  BookOpen,
 } from "lucide-react";
 
 interface TradeTableProps {
@@ -31,6 +34,8 @@ interface TradeTableProps {
   onSelectTrade: (trade: Trade) => void;
   onEditTrade: (trade: Trade) => void;
   onOpenImportModal: () => void;
+  onOpenLogModal?: () => void;
+  onOpenAccountModal?: () => void;
 }
 
 export function TradeTable({
@@ -38,6 +43,8 @@ export function TradeTable({
   onSelectTrade,
   onEditTrade,
   onOpenImportModal,
+  onOpenLogModal,
+  onOpenAccountModal,
 }: TradeTableProps) {
   const {
     deleteTrade,
@@ -437,8 +444,80 @@ export function TradeTable({
           <tbody className="divide-y divide-white/5">
             {paginatedTrades.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-8 text-center text-zinc-400">
-                  No trades match the current filter criteria.
+                <td colSpan={10} className="p-12 text-center">
+                  {trades.length === 0 ? (
+                    <div className="max-w-md mx-auto space-y-4 py-4">
+                      <div className="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center mx-auto text-white shadow-[0_0_25px_rgba(255,255,255,0.1)]">
+                        <BookOpen className="w-7 h-7 text-zinc-300" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono text-emerald-400 tracking-widest uppercase block mb-1">
+                          QUANTITATIVE JOURNAL • CLEAN SLATE
+                        </span>
+                        <h4 className="text-base font-bold font-mono text-white tracking-wider uppercase">
+                          Zero Trades Currently Logged
+                        </h4>
+                        <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                          Your execution vault is 100% clean of mock data. Connect an actual broker/prop firm, import your statement, or log your first setup.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+                        {onOpenLogModal && (
+                          <button
+                            type="button"
+                            onClick={onOpenLogModal}
+                            className="px-4 py-2 rounded-xl bg-white text-black font-bold font-mono text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:bg-zinc-200 transition-all cursor-pointer"
+                          >
+                            <PlusCircle className="w-3.5 h-3.5" />
+                            <span>+ Log First Trade</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={onOpenImportModal}
+                          className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/20 text-white font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Upload className="w-3.5 h-3.5 text-zinc-300" />
+                          <span>Import Statement (.CSV)</span>
+                        </button>
+                        {onOpenAccountModal && (
+                          <button
+                            type="button"
+                            onClick={onOpenAccountModal}
+                            className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                          >
+                            <Radio className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Connect Broker Account</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-6 space-y-2">
+                      <p className="text-xs font-mono text-zinc-400">
+                        No trades match the active filter criteria.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFilters({
+                            ticker: "",
+                            assetClass: "ALL",
+                            direction: "ALL",
+                            strategy: "ALL",
+                            setup: "ALL",
+                            session: "ALL",
+                            mistakeTag: "ALL",
+                            outcome: "ALL",
+                          })
+                        }
+                        className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ) : (

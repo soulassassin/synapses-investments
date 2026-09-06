@@ -25,6 +25,7 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from "lucide-react";
 import { GlassButton } from "@/components/glass/GlassButton";
 import { GlassModal } from "@/components/glass/GlassModal";
@@ -32,6 +33,7 @@ import { TradeTable } from "@/components/trading/TradeTable";
 import { TradeLogModal } from "@/components/trading/TradeLogModal";
 import { TradeDetailModal } from "@/components/trading/TradeDetailModal";
 import { CSVImportModal } from "@/components/trading/CSVImportModal";
+import { BrokerSyncModal } from "@/components/navigation/BrokerSyncModal";
 import { SpotDMAQuickEntry } from "@/components/journal/SpotDMAQuickEntry";
 import { JournalCalendarView } from "@/components/journal/JournalCalendarView";
 import { JournalPlaybookView } from "@/components/journal/JournalPlaybookView";
@@ -46,12 +48,12 @@ export default function JournalPage() {
     filteredTrades,
     currentMetrics,
     deleteTrade,
+    clearAllTrades,
     exportToCSV,
     resetSampleData,
     brokerAccounts,
     selectedAccount,
     setSelectedAccount,
-    connectBroker,
   } = useTrades();
 
   // Active View Tab State (default to MATRIX for daily execution workflow)
@@ -64,9 +66,6 @@ export default function JournalPage() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isConnectAccountOpen, setIsConnectAccountOpen] = useState(false);
-  const [newBrokerPlatform, setNewBrokerPlatform] = useState<any>("MetaTrader 5");
-  const [newAccountName, setNewAccountName] = useState("");
-  const [newAccountNumber, setNewAccountNumber] = useState("");
 
   const handleEditTrade = (trade: Trade) => {
     setSelectedTrade(null);
@@ -74,14 +73,10 @@ export default function JournalPage() {
     setIsLogModalOpen(true);
   };
 
-  const handleConnectNewAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAccountName.trim()) return;
-    connectBroker(newBrokerPlatform, newAccountName.trim(), newAccountNumber.trim());
-    setSelectedAccount(newAccountName.trim());
-    setIsConnectAccountOpen(false);
-    setNewAccountName("");
-    setNewAccountNumber("");
+  const handleClearAllData = () => {
+    if (window.confirm("Are you sure you want to purge all trade records and reset to a completely clean slate? This action cannot be undone.")) {
+      clearAllTrades();
+    }
   };
 
   const winRate = currentMetrics.winRate || 0;
@@ -182,16 +177,28 @@ export default function JournalPage() {
             Export CSV
           </GlassButton>
 
-          {/* Reset Sample Data */}
-          <GlassButton
-            variant="ghost"
-            size="sm"
-            onClick={resetSampleData}
-            icon={<RotateCcw className="w-3.5 h-3.5 text-zinc-400" />}
-            title="Reset to standard institutional sample trades"
-          >
-            Reset
-          </GlassButton>
+          {/* Purge / Clear All Data (when trades exist) */}
+          {trades.length > 0 ? (
+            <GlassButton
+              variant="outline"
+              size="sm"
+              onClick={handleClearAllData}
+              icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
+              title="Purge all trades and reset to a clean zero-state"
+            >
+              Clear Slate
+            </GlassButton>
+          ) : (
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              onClick={resetSampleData}
+              icon={<RotateCcw className="w-3.5 h-3.5 text-zinc-400" />}
+              title="Load standard institutional sample trades for sandbox testing"
+            >
+              Load Sample Data
+            </GlassButton>
+          )}
 
           {/* Primary High-Contrast + LOG NEW EXECUTION Button */}
           <button
@@ -373,6 +380,11 @@ export default function JournalPage() {
           onSelectTrade={(trade) => setSelectedTrade(trade)}
           onEditTrade={(trade) => handleEditTrade(trade)}
           onOpenImportModal={() => setIsImportModalOpen(true)}
+          onOpenLogModal={() => {
+            setTradeToEdit(null);
+            setIsLogModalOpen(true);
+          }}
+          onOpenAccountModal={() => setIsConnectAccountOpen(true)}
         />
       )}
 
@@ -434,75 +446,10 @@ export default function JournalPage() {
       />
 
       {/* Connect Broker / Prop Account Modal */}
-      <GlassModal
+      <BrokerSyncModal
         isOpen={isConnectAccountOpen}
         onClose={() => setIsConnectAccountOpen(false)}
-        title="Connect Broker / Prop Firm Account"
-        subtitle="Add a dedicated execution account to isolate telemetry, risk guardrails, and metrics"
-        maxWidth="md"
-      >
-        <form onSubmit={handleConnectNewAccount} className="space-y-4">
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
-              Trading Platform / Protocol
-            </label>
-            <select
-              value={newBrokerPlatform}
-              onChange={(e) => setNewBrokerPlatform(e.target.value as any)}
-              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
-            >
-              <option value="MetaTrader 5">MetaTrader 5 (MT5)</option>
-              <option value="MetaTrader 4">MetaTrader 4 (MT4)</option>
-              <option value="cTrader">cTrader FIX API</option>
-              <option value="Interactive Brokers">Interactive Brokers (IBKR)</option>
-              <option value="NinjaTrader">NinjaTrader 8</option>
-              <option value="Tradeovate">Tradovate REST/WS</option>
-              <option value="Custom Sync">Custom Manual Vault</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
-              Account Display Name (e.g. Apex 100K Funded)
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Topstep 50K Express #1"
-              value={newAccountName}
-              onChange={(e) => setNewAccountName(e.target.value)}
-              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-mono text-zinc-400 block mb-1">
-              Login ID / Account Number (Optional)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 5109842"
-              value={newAccountNumber}
-              onChange={(e) => setNewAccountNumber(e.target.value)}
-              className="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-white bg-black/60 border border-white/20"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
-            <GlassButton
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsConnectAccountOpen(false)}
-            >
-              Cancel
-            </GlassButton>
-            <GlassButton type="submit" variant="pill" size="sm">
-              Connect Account
-            </GlassButton>
-          </div>
-        </form>
-      </GlassModal>
+      />
     </div>
   );
 }
