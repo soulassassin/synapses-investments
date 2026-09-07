@@ -218,27 +218,50 @@ export function JournalMistakeAuditor({ trades, onSelectTrade }: JournalMistakeA
 
       {/* 2. Specific Mistake Tags Breakdown */}
       <div className="p-5 rounded-2xl bg-black/85 border border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.8)] space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
             <h3 className="text-sm font-black font-mono text-white tracking-wider">
               MISTAKE FREQUENCY & DAMAGE AUDIT
             </h3>
           </div>
-          {selectedMistakeTag && (
+          {selectedMistakeTag ? (
             <button
               onClick={() => setSelectedMistakeTag(null)}
-              className="text-xs font-mono text-zinc-400 hover:text-white underline"
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
             >
               Clear Filter (Showing {selectedMistakeTag})
             </button>
+          ) : (
+            <span className="text-[11px] font-mono text-zinc-500">
+              Click any card to filter executions below
+            </span>
           )}
         </div>
+
+        {/* Top Tilt Diagnosis Banner */}
+        {auditData.breachedTradesCount > 0 && (
+          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+            <Flame className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="text-xs font-mono">
+              <span className="text-amber-300 font-bold block">
+                COGNITIVE DIAGNOSIS & REMEDIATION
+              </span>
+              <p className="text-zinc-300 font-sans mt-0.5 leading-relaxed">
+                Your primary execution leak is <strong className="text-white">{
+                  Object.entries(auditData.tagFrequency).sort(([, a], [, b]) => b.count - a.count)[0]?.[0] || "Impulsive Sizing"
+                }</strong>. Consider setting a 15-minute mandatory cooling-off period after taking a loss to decouple emotional reaction from execution logic.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {ALL_MISTAKE_TAGS.map((tag) => {
             const data = auditData.tagFrequency[tag.id] || { count: 0, totalLoss: 0, totalR: 0 };
             const isSelected = selectedMistakeTag === tag.id;
+            const totalLossPool = Math.abs(auditData.breachedTradesPnL) || 1;
+            const lossShare = data.totalLoss > 0 ? Math.min(100, Math.round((data.totalLoss / totalLossPool) * 100)) : 0;
 
             return (
               <div
@@ -273,11 +296,21 @@ export function JournalMistakeAuditor({ trades, onSelectTrade }: JournalMistakeA
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
-                  <span className="text-zinc-500">Loss:</span>
-                  <span className={data.totalLoss > 0 ? "text-red-400 font-bold" : "text-zinc-500"}>
-                    -${Math.round(data.totalLoss).toLocaleString()}
-                  </span>
+                <div className="mt-3 pt-2 border-t border-white/5 space-y-1 text-[10px] font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">Damage:</span>
+                    <span className={data.totalLoss > 0 ? "text-red-400 font-bold" : "text-zinc-500"}>
+                      -${Math.round(data.totalLoss).toLocaleString()} {lossShare > 0 ? `(${lossShare}%)` : ""}
+                    </span>
+                  </div>
+                  {lossShare > 0 && (
+                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                      <div
+                        className="bg-red-500 h-full rounded-full"
+                        style={{ width: `${lossShare}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             );

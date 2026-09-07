@@ -38,19 +38,22 @@ export function AntigravityNavbar() {
 
   const navLinks = [
     { name: "About", href: "/about", desc: "Institutional philosophy & edge", icon: <History className="w-4 h-4" /> },
+    { name: "Pricing", href: "/pricing", desc: "7-Week trial & access tiers", icon: <Sparkles className="w-4 h-4" /> },
     { name: "Intelligence", href: "/intelligence", desc: "Quantitative research & models", icon: <Layers className="w-4 h-4" /> },
-    { name: "Journal", href: "/journal", desc: "Execution black box & live demo", icon: <BookOpen className="w-4 h-4" /> },
+    { name: "Journal", href: "/dashboard/journal", desc: "Execution black box & terminal", icon: <BookOpen className="w-4 h-4" /> },
     { name: "Manifesto", href: "/manifesto", desc: "The quantitative doctrine", icon: <TrendingUp className="w-4 h-4" /> },
     { name: "Risk Calculator", href: "/risk-calculator", desc: "Dynamic position guardrails", icon: <Calculator className="w-4 h-4" /> },
   ];
 
   const apps = [
     { name: "About Synapses", desc: "Prop Firm Architecture", href: "/about", icon: <History className="w-5 h-5 text-zinc-300" /> },
+    { name: "Pricing & 7-Wk Trial", desc: "Access Tiers & Rails", href: "/pricing", icon: <Sparkles className="w-5 h-5 text-emerald-400" /> },
     { name: "Broker Gateway", desc: "Live MT5/cTrader Sync", href: "/login", icon: <Zap className="w-5 h-5 text-zinc-300" /> },
     { name: "Intelligence", desc: "Quant Lab & Research", href: "/intelligence", icon: <Layers className="w-5 h-5 text-white" /> },
     { name: "Risk Calculator", desc: "Dynamic Lot Guardrails", href: "/risk-calculator", icon: <Calculator className="w-5 h-5 text-white" /> },
     { name: "SN Manifesto", desc: "Mechanical Doctrine", href: "/manifesto", icon: <TrendingUp className="w-5 h-5 text-zinc-300" /> },
-    { name: "Trade Journal", desc: "Live Interactive Demo", href: "/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
+    { name: "What is SN Journal", desc: "Algorithmic Black Box", href: "/what-is-sn-journal", icon: <BookOpen className="w-5 h-5 text-zinc-300" /> },
+    { name: "Trade Journal", desc: "Execution Terminal", href: "/dashboard/journal", icon: <BookOpen className="w-5 h-5 text-white" /> },
   ];
 
   return (

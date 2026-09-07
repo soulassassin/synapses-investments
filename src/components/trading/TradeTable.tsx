@@ -61,6 +61,9 @@ export function TradeTable({
 
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [quickPreset, setQuickPreset] = useState<"ALL" | "WINS" | "LOSSES" | "HIGH_R" | "DISCIPLINED" | "MISTAKES">("ALL");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,12 +74,21 @@ export function TradeTable({
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortOrder("desc");
     }
   };
 
+  // Apply quick preset filter on top of base trades
+  const presetFilteredTrades = useMemo(() => {
+    if (quickPreset === "WINS") return trades.filter((t) => t.netPnL > 0);
+    if (quickPreset === "LOSSES") return trades.filter((t) => t.netPnL < 0);
+    if (quickPreset === "HIGH_R") return trades.filter((t) => (t.rMultiple || 0) >= 2.0);
+    if (quickPreset === "DISCIPLINED") return trades.filter((t) => !t.mistakeTags || t.mistakeTags.length === 0);
+    if (quickPreset === "MISTAKES") return trades.filter((t) => t.mistakeTags && t.mistakeTags.length > 0);
+    return trades;
+  }, [trades, quickPreset]);
+
   const sortedTrades = useMemo(() => {
-    return [...trades].sort((a, b) => {
+    return [...presetFilteredTrades].sort((a, b) => {
       let aVal = a[sortField];
       let bVal = b[sortField];
       if (typeof aVal === "string") {
@@ -91,7 +103,7 @@ export function TradeTable({
       }
       return 0;
     });
-  }, [trades, sortField, sortOrder]);
+  }, [presetFilteredTrades, sortField, sortOrder]);
 
   // Paginated trades
   const totalPages = pageSize === 0 ? 1 : Math.ceil(sortedTrades.length / pageSize) || 1;
@@ -100,6 +112,48 @@ export function TradeTable({
     const start = (currentPage - 1) * pageSize;
     return sortedTrades.slice(start, start + pageSize);
   }, [sortedTrades, currentPage, pageSize]);
+
+  // Keyboard navigation handler
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing inside an input/textarea
+      if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+        e.preventDefault();
+        setShowShortcutsModal((prev) => !prev);
+      } else if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.min(prev + 1, paginatedTrades.length - 1));
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "Enter" || e.key === " ") {
+        if (focusedIndex >= 0 && focusedIndex < paginatedTrades.length) {
+          e.preventDefault();
+          onSelectTrade(paginatedTrades[focusedIndex]);
+        }
+      } else if (e.key === "e") {
+        if (focusedIndex >= 0 && focusedIndex < paginatedTrades.length) {
+          e.preventDefault();
+          onEditTrade(paginatedTrades[focusedIndex]);
+        }
+      } else if (e.key === "x" || e.key === "s") {
+        if (focusedIndex >= 0 && focusedIndex < paginatedTrades.length) {
+          e.preventDefault();
+          toggleSelect(paginatedTrades[focusedIndex].id);
+        }
+      } else if (e.key === "Escape") {
+        setFocusedIndex(-1);
+        setShowShortcutsModal(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [paginatedTrades, focusedIndex, onSelectTrade, onEditTrade]);
 
   // Toggle single selection
   const toggleSelect = (id: string, e?: React.MouseEvent) => {
@@ -222,6 +276,17 @@ export function TradeTable({
 
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Keyboard Shortcuts Trigger */}
+          <button
+            type="button"
+            onClick={() => setShowShortcutsModal(true)}
+            className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer"
+            title="View keyboard shortcut navigation commands"
+          >
+            <span className="px-1.5 py-0.2 rounded bg-white/10 text-[10px] font-bold text-white">?</span>
+            <span>Shortcuts</span>
+          </button>
+
           <GlassButton
             variant="outline"
             size="sm"
@@ -250,6 +315,47 @@ export function TradeTable({
             Reset
           </GlassButton>
         </div>
+      </div>
+
+      {/* Quick Preset Filter Chips Strip */}
+      <div className="flex items-center gap-2 mb-3.5 overflow-x-auto custom-scrollbar pb-1">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 whitespace-nowrap mr-1">
+          Quick Filters:
+        </span>
+        {[
+          { id: "ALL", label: "All Executions", count: trades.length },
+          { id: "WINS", label: "Winners Only (+P&L)", count: trades.filter((t) => t.netPnL > 0).length, color: "text-emerald-400" },
+          { id: "LOSSES", label: "Losses Only (-P&L)", count: trades.filter((t) => t.netPnL < 0).length, color: "text-red-400" },
+          { id: "HIGH_R", label: "High R (>2R)", count: trades.filter((t) => (t.rMultiple || 0) >= 2.0).length, color: "text-cyan-400" },
+          { id: "DISCIPLINED", label: "Disciplined (0 Errors)", count: trades.filter((t) => !t.mistakeTags || t.mistakeTags.length === 0).length, color: "text-emerald-400" },
+          { id: "MISTAKES", label: "Flagged Mistakes", count: trades.filter((t) => t.mistakeTags && t.mistakeTags.length > 0).length, color: "text-amber-400" },
+        ].map((chip) => {
+          const isActive = quickPreset === chip.id;
+          return (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => {
+                setQuickPreset(chip.id as any);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                isActive
+                  ? "bg-white text-black shadow-[0_0_12px_rgba(255,255,255,0.3)]"
+                  : "bg-white/[0.03] text-zinc-400 border border-white/10 hover:text-white hover:bg-white/[0.06]"
+              }`}
+            >
+              <span>{chip.label}</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded ${
+                  isActive ? "bg-black/20 text-black font-black" : "bg-white/5 text-zinc-400"
+                }`}
+              >
+                {chip.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filter Bar */}
@@ -521,18 +627,26 @@ export function TradeTable({
                 </td>
               </tr>
             ) : (
-              paginatedTrades.map((trade) => {
+              paginatedTrades.map((trade, idx) => {
                 const isWin = trade.netPnL >= 0;
                 const isSelected = selectedIds.has(trade.id);
+                const isFocused = focusedIndex === idx;
                 const hasScreenshot = (trade.chartScreenshots && trade.chartScreenshots.length > 0) || trade.chartScreenshot;
 
                 return (
                   <tr
                     key={trade.id}
-                    className={`hover:bg-white/[0.04] transition-colors group cursor-pointer ${
-                      isSelected ? "bg-white/[0.06]" : ""
+                    className={`transition-all duration-150 group cursor-pointer ${
+                      isSelected
+                        ? "bg-white/[0.08] ring-1 ring-white/20"
+                        : isFocused
+                        ? "bg-cyan-500/10 ring-1 ring-cyan-400/40"
+                        : "hover:bg-white/[0.04]"
                     }`}
-                    onClick={() => onSelectTrade(trade)}
+                    onClick={() => {
+                      setFocusedIndex(idx);
+                      onSelectTrade(trade);
+                    }}
                   >
                     {/* Checkbox */}
                     <td
@@ -721,6 +835,66 @@ export function TradeTable({
           </div>
         )}
       </div>
+
+      {/* Keyboard Shortcuts Helper Modal */}
+      {showShortcutsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150"
+          onClick={() => setShowShortcutsModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-[#0B0B10] border border-white/20 p-6 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.95)] font-mono"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded bg-white/10 text-xs font-bold text-white">⌨</span>
+                <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                  KEYBOARD EXECUTION SHORTCUTS
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="text-xs text-zinc-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              {[
+                { keys: ["j", "↓"], desc: "Move focus down to next trade execution row" },
+                { keys: ["k", "↑"], desc: "Move focus up to previous trade execution row" },
+                { keys: ["Enter", "Space"], desc: "Open full Deep-Dive Trade Inspector" },
+                { keys: ["e"], desc: "Edit focused trade execution parameters" },
+                { keys: ["x", "s"], desc: "Toggle selection checkbox on focused row" },
+                { keys: ["Esc"], desc: "Clear focused row / close inspector modal" },
+                { keys: ["?"], desc: "Toggle this Keyboard Shortcuts legend" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    {item.keys.map((k) => (
+                      <kbd key={k} className="px-2 py-0.5 rounded bg-white/10 text-white font-bold text-[11px] border border-white/20">
+                        {k}
+                      </kbd>
+                    ))}
+                  </div>
+                  <span className="text-zinc-400 text-[11px] text-right">{item.desc}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-white/10 flex justify-end">
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold hover:bg-zinc-200 transition-colors"
+              >
+                Close (Esc)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </GlassCard>
   );
 }

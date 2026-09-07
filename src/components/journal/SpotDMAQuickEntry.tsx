@@ -374,7 +374,7 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
               TAKE PROFIT
             </label>
             <div className="flex gap-1">
-              {[2, 3, 5].map((mult) => (
+              {[1.5, 2, 3, 5].map((mult) => (
                 <button
                   key={mult}
                   type="button"
@@ -390,6 +390,11 @@ export function SpotDMAQuickEntry({ onTradeLogged, onClose }: SpotDMAQuickEntryP
             type="number"
             step="any"
             value={takeProfit || ""}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                handleExecuteTrade();
+              }
+            }}
             onChange={(e) => setTakeProfit(parseFloat(e.target.value) || 0)}
             placeholder="TP"
             className={`w-full px-2.5 py-1.5 rounded-lg bg-white/[0.04] border text-xs font-mono text-center focus:outline-none ${

@@ -51,7 +51,9 @@ export function JournalPlaybookView({
 
   const [selectedSetup, setSelectedSetup] = useState("ALL");
   const [zoomedChartTrade, setZoomedChartTrade] = useState<Trade | null>(null);
+  const [lightboxZoom, setLightboxZoom] = useState<number>(1);
   const [subView, setSubView] = useState<"EXECUTIONS" | "STRATEGIES">("EXECUTIONS");
+  const [strategySearchQuery, setStrategySearchQuery] = useState("");
 
   // Custom Strategy Modal State
   const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
@@ -313,93 +315,142 @@ export function JournalPlaybookView({
       {/* ========================================================================= */}
       {subView === "STRATEGIES" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
               CUSTOM PLAYBOOK STRATEGIES & RULES
             </h4>
-            <span className="text-xs font-mono text-zinc-500">
-              {playbookStrategies.length} Active Models
-            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={strategySearchQuery}
+                onChange={(e) => setStrategySearchQuery(e.target.value)}
+                placeholder="Search strategies..."
+                className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+              />
+              <span className="text-xs font-mono text-zinc-500 whitespace-nowrap">
+                {playbookStrategies.length} Active Models
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {playbookStrategies.map((strat) => (
-              <div
-                key={strat.id}
-                className="p-5 rounded-2xl bg-black/85 border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-base font-black font-mono text-white group-hover:text-cyan-300 transition-colors">
-                      {strat.name}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                      {strat.setupCategory || "Model"}
-                    </span>
-                  </div>
+            {playbookStrategies
+              .filter((strat) =>
+                strategySearchQuery.trim() === "" ||
+                strat.name.toLowerCase().includes(strategySearchQuery.toLowerCase()) ||
+                strat.description.toLowerCase().includes(strategySearchQuery.toLowerCase()) ||
+                (strat.confluenceTags || []).some((t) => t.toLowerCase().includes(strategySearchQuery.toLowerCase()))
+              )
+              .map((strat) => {
+                // Compute performance stats for this strategy
+                const stratTrades = trades.filter(
+                  (t) =>
+                    (t.strategy || "").toLowerCase() === strat.name.toLowerCase() ||
+                    (t.setup || "").toLowerCase() === strat.name.toLowerCase()
+                );
+                const count = stratTrades.length;
+                const wins = stratTrades.filter((t) => t.netPnL > 0).length;
+                const wr = count > 0 ? Number(((wins / count) * 100).toFixed(0)) : 0;
+                const pnl = stratTrades.reduce((acc, t) => acc + t.netPnL, 0);
 
-                  <p className="text-xs text-zinc-400 font-sans mb-4 leading-relaxed">
-                    {strat.description || "No description provided."}
-                  </p>
-
-                  {/* Rules Checklist */}
-                  {strat.rules && strat.rules.length > 0 && (
-                    <div className="space-y-1.5 mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block mb-1">
-                        EXECUTION RULES
-                      </span>
-                      {strat.rules.map((rule, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs font-mono text-zinc-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                          <span>{rule}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {strat.confluenceTags && strat.confluenceTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {strat.confluenceTags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-zinc-400 border border-white/5">
-                          #{tag}
+                return (
+                  <div
+                    key={strat.id}
+                    className="p-5 rounded-2xl bg-black/85 border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between group shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-base font-black font-mono text-white group-hover:text-cyan-300 transition-colors">
+                          {strat.name}
                         </span>
-                      ))}
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                          {strat.setupCategory || "Model"}
+                        </span>
+                      </div>
+
+                      {/* Mini Telemetry Ribbon for this Strategy */}
+                      <div className="grid grid-cols-3 gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/5 mb-3 text-center font-mono">
+                        <div>
+                          <span className="text-[9px] text-zinc-500 block">TRADES</span>
+                          <span className="text-xs font-bold text-white">{count}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-zinc-500 block">WIN RATE</span>
+                          <span className={`text-xs font-bold ${count > 0 ? (wr >= 50 ? "text-emerald-400" : "text-amber-400") : "text-zinc-500"}`}>
+                            {count > 0 ? `${wr}%` : "-"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-zinc-500 block">NET P&L</span>
+                          <span className={`text-xs font-bold ${count > 0 ? (pnl >= 0 ? "text-emerald-400" : "text-red-400") : "text-zinc-500"}`}>
+                            {count > 0 ? `${pnl >= 0 ? "+" : ""}$${Math.round(pnl)}` : "-"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-zinc-400 font-sans mb-4 leading-relaxed">
+                        {strat.description || "No description provided."}
+                      </p>
+
+                      {/* Rules Checklist */}
+                      {strat.rules && strat.rules.length > 0 && (
+                        <div className="space-y-1.5 mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block mb-1">
+                            EXECUTION RULES
+                          </span>
+                          {strat.rules.map((rule, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-xs font-mono text-zinc-300">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                              <span>{rule}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Tags */}
+                      {strat.confluenceTags && strat.confluenceTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {strat.confluenceTags.map((tag) => (
+                            <span key={tag} className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-zinc-400 border border-white/5">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {/* Footer Controls */}
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
-                  <span className="text-emerald-400 font-bold">
-                    Target: 1:{strat.targetRR} R:R
-                  </span>
+                    {/* Footer Controls */}
+                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
+                      <span className="text-emerald-400 font-bold">
+                        Target: 1:{strat.targetRR} R:R
+                      </span>
 
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleOpenEditStrategy(strat)}
-                      className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                      title="Edit Strategy Details"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </button>
-                    {!strat.isDefault && (
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete custom strategy "${strat.name}"?`)) {
-                            deletePlaybookStrategy(strat.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition-all cursor-pointer"
-                        title="Delete Strategy"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditStrategy(strat)}
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                          title="Edit Strategy Details"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        {!strat.isDefault && (
+                          <button
+                            onClick={() => {
+                              if (confirm(`Delete custom strategy "${strat.name}"?`)) {
+                                deletePlaybookStrategy(strat.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition-all cursor-pointer"
+                            title="Delete Strategy"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </div>
         </div>
       )}
@@ -590,22 +641,46 @@ export function JournalPlaybookView({
                 </span>
               </div>
 
-              <button
-                onClick={() => setZoomedChartTrade(null)}
-                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Zoom Scale Buttons */}
+                <div className="flex items-center p-1 rounded-xl bg-white/[0.06] border border-white/10 gap-1 text-[10px] font-mono">
+                  {[1, 1.5, 2].map((scale) => (
+                    <button
+                      key={scale}
+                      onClick={() => setLightboxZoom(scale)}
+                      className={`px-2 py-0.5 rounded ${
+                        lightboxZoom === scale
+                          ? "bg-white text-black font-bold"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      {scale}x
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setZoomedChartTrade(null);
+                    setLightboxZoom(1);
+                  }}
+                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* High-res chart container */}
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black aspect-video flex items-center justify-center relative">
+            <div className="rounded-xl overflow-auto custom-scrollbar border border-white/10 bg-black aspect-video flex items-center justify-center relative max-h-[70vh]">
               {zoomedChartTrade.chartScreenshot ? (
-                <img
-                  src={zoomedChartTrade.chartScreenshot}
-                  alt="High Res Chart"
-                  className="w-full h-full object-contain"
-                />
+                <div className="transition-transform duration-200 flex items-center justify-center w-full h-full" style={{ transform: `scale(${lightboxZoom})`, transformOrigin: "center center" }}>
+                  <img
+                    src={zoomedChartTrade.chartScreenshot}
+                    alt="High Res Chart"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
               ) : (
                 <div className="p-8 text-center space-y-3">
                   <Sparkles className="w-10 h-10 text-cyan-400 mx-auto animate-pulse" />

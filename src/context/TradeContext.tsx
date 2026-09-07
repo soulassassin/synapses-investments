@@ -921,3 +921,5 @@ export function useTrades() {
   }
   return context;
 }
+
+export const useTradeContext = useTrades;

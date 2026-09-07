@@ -88,7 +88,25 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
   // Let's align Mon = 0, Sun = 6
   const firstDayWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
 
-  // Compute month aggregate stats
+  // Keyboard navigation for month switching
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handlePrevMonth();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleNextMonth();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [year, month]);
+
+  // Compute month aggregate stats and day extremes
   const monthStats = useMemo(() => {
     let totalPnL = 0;
     let totalTrades = 0;
@@ -97,6 +115,12 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
     let totalR = 0;
     let greenDays = 0;
     let redDays = 0;
+    let bestDay: { day: number; pnl: number } | null = null;
+    let worstDay: { day: number; pnl: number } | null = null;
+    let maxAbsDayPnL = 100;
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let tempStreak = 0;
 
     for (let day = 1; day <= daysInMonth; day++) {
       const dayKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -112,10 +136,27 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
           else if (t.netPnL < 0) totalLosses += 1;
         });
 
-        if (dayPnL > 0) greenDays += 1;
-        else if (dayPnL < 0) redDays += 1;
+        if (Math.abs(dayPnL) > maxAbsDayPnL) {
+          maxAbsDayPnL = Math.abs(dayPnL);
+        }
+
+        if (dayPnL > 0) {
+          greenDays += 1;
+          tempStreak += 1;
+          if (tempStreak > maxStreak) maxStreak = tempStreak;
+          if (bestDay === null || dayPnL > bestDay.pnl) {
+            bestDay = { day, pnl: dayPnL };
+          }
+        } else if (dayPnL < 0) {
+          redDays += 1;
+          tempStreak = 0;
+          if (worstDay === null || dayPnL < worstDay.pnl) {
+            worstDay = { day, pnl: dayPnL };
+          }
+        }
       }
     }
+    currentStreak = tempStreak;
 
     const winRate = totalTrades > 0 ? Number(((totalWins / totalTrades) * 100).toFixed(1)) : 0;
     return {
@@ -127,6 +168,11 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
       winRate,
       greenDays,
       redDays,
+      bestDay,
+      worstDay,
+      maxAbsDayPnL,
+      currentStreak,
+      maxStreak,
     };
   }, [tradesByDate, year, month, daysInMonth]);
 
@@ -155,16 +201,16 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
   const weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* 1. Header Navigation & Monthly KPIs */}
       <div className="p-5 rounded-2xl bg-black/85 border border-white/10 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
         {/* Month Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.04] border border-white/10">
             <button
               onClick={handlePrevMonth}
               className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
-              title="Previous Month"
+              title="Previous Month (← key)"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -174,7 +220,7 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
             <button
               onClick={handleNextMonth}
               className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
-              title="Next Month"
+              title="Next Month (→ key)"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -182,10 +228,24 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
 
           <button
             onClick={handleJumpToCurrent}
-            className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all"
+            className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all cursor-pointer"
           >
             Today
           </button>
+
+          {/* Extremes Highlights */}
+          {monthStats.bestDay && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
+              <span className="text-zinc-500">Best:</span>
+              <span className="font-bold">+{monthStats.bestDay.day}th (+${Math.round(monthStats.bestDay.pnl).toLocaleString()})</span>
+            </div>
+          )}
+          {monthStats.maxStreak > 1 && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-mono text-amber-300">
+              <span>🔥</span>
+              <span className="font-bold">{monthStats.maxStreak}-Day Streak</span>
+            </div>
+          )}
         </div>
 
         {/* Monthly Summary Telemetry Strip */}
@@ -316,18 +376,40 @@ export function JournalCalendarView({ trades, onSelectTrade, onEditTrade }: Jour
 
                 {/* Day Center / Bottom: Net PnL & Win/Loss Breakdown */}
                 {hasTrades ? (
-                  <div className="space-y-1">
-                    <div
-                      className={`text-xs sm:text-sm font-black font-mono tracking-tight ${
-                        isProfit ? "text-emerald-400" : isLoss ? "text-red-400" : "text-zinc-300"
-                      }`}
-                    >
-                      {dayPnL >= 0 ? "+" : ""}${Math.round(dayPnL).toLocaleString()}
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline justify-between">
+                      <div
+                        className={`text-xs sm:text-sm font-black font-mono tracking-tight ${
+                          isProfit ? "text-emerald-400" : isLoss ? "text-red-400" : "text-zinc-300"
+                        }`}
+                      >
+                        {dayPnL >= 0 ? "+" : ""}${Math.round(dayPnL).toLocaleString()}
+                      </div>
+                      {monthStats.bestDay?.day === dayNum && (
+                        <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                          ★ Best
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-[9px] font-mono text-zinc-400">
-                      <span className="text-emerald-400 font-semibold">{wins}W</span>
-                      <span>•</span>
-                      <span className="text-red-400 font-semibold">{losses}L</span>
+
+                    <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <div className="flex items-center gap-1">
+                        <span className="text-emerald-400 font-semibold">{wins}W</span>
+                        <span>•</span>
+                        <span className="text-red-400 font-semibold">{losses}L</span>
+                      </div>
+                    </div>
+
+                    {/* Day Mini PnL Magnitude Bar */}
+                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          isProfit ? "bg-emerald-400 shadow-[0_0_6px_#10B981]" : isLoss ? "bg-red-500 shadow-[0_0_6px_#EF4444]" : "bg-zinc-500"
+                        }`}
+                        style={{
+                          width: `${Math.min(100, Math.max(15, (Math.abs(dayPnL) / (monthStats.maxAbsDayPnL || 1)) * 100))}%`,
+                        }}
+                      />
                     </div>
                   </div>
                 ) : (
