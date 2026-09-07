@@ -4,11 +4,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { AntigravityNavbar } from "@/components/antigravity/AntigravityNavbar";
 import {
+  CURRENCIES,
+  SupportedCurrency,
+  formatPrice,
+  BASE_PLANS_USD,
+} from "@/lib/currency";
+import {
   Check,
   ShieldCheck,
   Zap,
   Globe,
-  Building2,
   CreditCard,
   Sparkles,
   ArrowRight,
@@ -22,14 +27,14 @@ import {
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [currencyRail, setCurrencyRail] = useState<"ZAR" | "USD">("ZAR");
+  const [currency, setCurrency] = useState<SupportedCurrency>("USD");
 
   const plans = [
     {
+      key: "basic",
       name: "DEMO PROTOCOL",
       badge: "Free Tier",
-      priceZAR: "R0",
-      priceUSD: "$0",
+      priceUSD: 0,
       period: "forever",
       description: "For testing execution taxonomy and exploring sample market telemetry.",
       features: [
@@ -45,10 +50,10 @@ export default function PricingPage() {
       highlighted: false,
     },
     {
+      key: "pro",
       name: "7-WEEK FULL ACCESS TRIAL",
       badge: "Most Popular • 0$ Upfront",
-      priceZAR: billingCycle === "monthly" ? "R499" : "R399",
-      priceUSD: billingCycle === "monthly" ? "$29" : "$24",
+      priceUSD: billingCycle === "monthly" ? BASE_PLANS_USD.pro.monthly : BASE_PLANS_USD.pro.annualMonthly,
       period: "per month after 49-day trial",
       trialNote: "49 Days Free • Cancel Anytime in 1 Click",
       description: "Complete proprietary firm trading architecture with automated broker scanning & unlimited vault capacity.",
@@ -64,14 +69,14 @@ export default function PricingPage() {
         "Priority 24/7 institutional desk support",
       ],
       ctaText: "Claim 7-Week Free Trial",
-      ctaHref: `/checkout?plan=pro&billing=${billingCycle}`,
+      ctaHref: `/checkout?plan=pro&billing=${billingCycle}&currency=${currency}`,
       highlighted: true,
     },
     {
+      key: "syndicate",
       name: "INSTITUTIONAL SYNDICATE",
       badge: "Desk / Fund",
-      priceZAR: "R1,999",
-      priceUSD: "$99",
+      priceUSD: billingCycle === "monthly" ? BASE_PLANS_USD.syndicate.monthly : BASE_PLANS_USD.syndicate.annualMonthly,
       period: "per month",
       description: "For proprietary trading firms, syndicates, and multi-desk risk managers requiring team oversight.",
       features: [
@@ -83,7 +88,7 @@ export default function PricingPage() {
         "Dedicated institutional onboarding engineer",
       ],
       ctaText: "Get Syndicate Access",
-      ctaHref: `/checkout?plan=syndicate&billing=${billingCycle}`,
+      ctaHref: `/checkout?plan=syndicate&billing=${billingCycle}&currency=${currency}`,
       highlighted: false,
     },
   ];
@@ -94,8 +99,12 @@ export default function PricingPage() {
       a: "You get 49 full days of unrestricted access to all Pro features (including automated broker account syncing, unlimited trade logs, and the mistake auditor). No unexpected charges—you can cancel with one click directly inside your billing settings at any time.",
     },
     {
-      q: "Which payment methods and currencies are supported?",
-      a: "We support both international cards (Visa, Mastercard, Amex, Apple Pay) via global rails (USD) and local South African payments (ZAR cards, Capitec Pay, Instant EFT) via Paystack.",
+      q: "Which payment methods are supported globally?",
+      a: "We support all major Credit & Debit cards (Visa, Mastercard, American Express, Discover), Apple Pay, Google Pay, PayPal, and Cryptocurrency Web3 rails (USDT, USDC, BTC, ETH).",
+    },
+    {
+      q: "Can I pay in my local currency?",
+      a: "Yes. All pricing is standardized to US Dollars ($) as the global industry baseline, and automatically converts to your local currency (EUR, GBP, CAD, AUD, JPY, etc.) at current live exchange rates.",
     },
     {
       q: "Can I connect live MetaTrader (MT4/MT5) and cTrader accounts?",
@@ -140,39 +149,30 @@ export default function PricingPage() {
             Unlock your full trading edge with 49 days of free unlimited access. Built for prop firm challengers and disciplined quantitative operators.
           </p>
 
-          {/* Toggle Rail & Billing Selectors */}
+          {/* Controls: Billing Cycle & Geo Currency Selector */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            {/* Currency Rail Switcher */}
-            <div className="p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-1 font-mono text-xs">
-              <button
-                onClick={() => setCurrencyRail("ZAR")}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                  currencyRail === "ZAR"
-                    ? "bg-emerald-500 text-black font-bold shadow-[0_0_15px_rgba(16,185,129,0.35)]"
-                    : "text-zinc-400 hover:text-white"
-                }`}
+            {/* Currency Selector Dropdown */}
+            <div className="p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-2 px-3 py-1 font-mono text-xs">
+              <Globe className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-zinc-400">CURRENCY:</span>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
+                className="bg-black/60 border border-white/15 text-white text-xs font-mono rounded-lg px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>South Africa (ZAR • EFT & Cards)</span>
-              </button>
-              <button
-                onClick={() => setCurrencyRail("USD")}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                  currencyRail === "USD"
-                    ? "bg-emerald-500 text-black font-bold shadow-[0_0_15px_rgba(16,185,129,0.35)]"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span>International (USD • Cards & Apple Pay)</span>
-              </button>
+                {Object.values(CURRENCIES).map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code} ({c.symbol})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Monthly / Annual Toggle */}
             <div className="p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-1 font-mono text-xs">
               <button
                 onClick={() => setBillingCycle("monthly")}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                   billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -180,7 +180,7 @@ export default function PricingPage() {
               </button>
               <button
                 onClick={() => setBillingCycle("annual")}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                   billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -196,7 +196,7 @@ export default function PricingPage() {
         {/* PRICING CARDS */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           {plans.map((plan) => {
-            const displayPrice = currencyRail === "ZAR" ? plan.priceZAR : plan.priceUSD;
+            const displayPrice = plan.priceUSD === 0 ? "$0" : formatPrice(plan.priceUSD, currency);
             return (
               <div
                 key={plan.name}

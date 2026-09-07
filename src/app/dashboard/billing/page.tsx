@@ -251,7 +251,7 @@ export default function BillingPortalPage() {
               />
             </div>
             <span className="text-[11px] font-mono text-zinc-500 block">
-              Trial ends on {new Date(subscription.trialEndsAt).toLocaleDateString()} • Next recurring billing is $24/mo or R399/mo.
+              Trial ends on {new Date(subscription.trialEndsAt).toLocaleDateString()} • Next recurring billing is $24.00/mo (annual) or $29.00/mo (monthly).
             </span>
           </div>
         )}
@@ -266,7 +266,7 @@ export default function BillingPortalPage() {
           <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
             <span className="text-zinc-400 block text-[10px]">RECURRING AMOUNT</span>
             <span className="text-emerald-400 font-bold block text-sm">
-              $29.00 / mo (or R499 ZAR)
+              $29.00 / mo ($24.00 / mo annual)
             </span>
           </div>
 
@@ -334,7 +334,7 @@ export default function BillingPortalPage() {
           </div>
 
           <div className="text-right font-mono text-xs text-zinc-400">
-            <span>Billing Rail: Stripe / Paystack Global</span>
+            <span>Billing Rail: Stripe / Lemon Squeezy Global</span>
           </div>
         </div>
       </GlassCard>

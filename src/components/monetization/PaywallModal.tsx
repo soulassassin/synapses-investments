@@ -9,7 +9,6 @@ import {
   Zap,
   ShieldCheck,
   CreditCard,
-  Building2,
   Clock,
   Sparkles,
   ArrowRight,
@@ -21,6 +20,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTrades } from "@/context/TradeContext";
+import {
+  CURRENCIES,
+  SupportedCurrency,
+  BASE_PLANS_USD,
+  formatPrice,
+  getPlanPriceUSD,
+} from "@/lib/currency";
 
 export function PaywallModal() {
   const router = useRouter();
@@ -28,7 +34,8 @@ export function PaywallModal() {
   const { isPaywallOpen, paywallReason, closePaywall, trades, maxDemoTrades } = useTrades();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [paymentRail, setPaymentRail] = useState<"card" | "paystack" | "crypto" | "paypal">("card");
+  const [currency, setCurrency] = useState<SupportedCurrency>("USD");
+  const [paymentRail, setPaymentRail] = useState<"card" | "crypto" | "paypal">("card");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -44,13 +51,10 @@ export function PaywallModal() {
   const daysLeft = subscription.trialDaysRemaining;
   const tradesCount = trades.length;
 
-  const isZAR = paymentRail === "paystack";
-  const basePrice = isZAR
-    ? billingCycle === "monthly" ? 499 : 399
-    : billingCycle === "monthly" ? 29 : 24;
-
+  const baseUSD = getPlanPriceUSD("pro", billingCycle);
   const discountMultiplier = appliedPromo ? (100 - appliedPromo.discountPct) / 100 : 1.0;
-  const finalPrice = Number((basePrice * discountMultiplier).toFixed(2));
+  const finalPriceUSD = Number((baseUSD * discountMultiplier).toFixed(2));
+  const formattedPrice = formatPrice(finalPriceUSD, currency);
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -83,38 +87,13 @@ export function PaywallModal() {
       const email = user?.email || "trader@synapsesinvestments.com";
       const userId = user?.id || "demo-trader-01";
 
-      if (paymentRail === "paystack") {
-        const res = await fetch("/api/checkout/paystack", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            userId,
-            plan: billingCycle,
-            returnUrl: window.location.href,
-          }),
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || "Failed to initialize Paystack checkout.");
-        }
-
-        if (data.mode === "sandbox") {
-          await updateSubscription("pro", "paystack", data.reference);
-          setIsLoading(false);
-          closePaywall();
-          return;
-        }
-
-        window.location.href = data.authorization_url;
-      } else if (paymentRail === "crypto") {
-        await updateSubscription("pro", "lemonsqueezy", "crypto_sim_01");
+      if (paymentRail === "crypto") {
+        await updateSubscription("pro", "crypto", "crypto_sim_01");
         setIsLoading(false);
         closePaywall();
         router.push("/dashboard?payment=success&provider=crypto");
       } else if (paymentRail === "paypal") {
-        await updateSubscription("pro", "lemonsqueezy", "paypal_sim_01");
+        await updateSubscription("pro", "paypal", "paypal_sim_01");
         setIsLoading(false);
         closePaywall();
         router.push("/dashboard?payment=success&provider=paypal");
@@ -132,7 +111,7 @@ export function PaywallModal() {
 
         const data = await res.json();
         if (!res.ok || !data.success) {
-          throw new Error(data.error || "Failed to initialize International checkout.");
+          throw new Error(data.error || "Failed to initialize secure checkout.");
         }
 
         if (data.mode === "sandbox") {
@@ -216,88 +195,95 @@ export function PaywallModal() {
 
         {/* Configuration Body */}
         <div className="p-6 sm:p-8 space-y-5">
-          {/* Payment Method Selector (4 Industry Rails) */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
+          {/* Controls: Billing Cycle & Currency */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
-                SELECT PAYMENT RAIL
+                CURRENCY:
               </label>
-              <div className="flex gap-1 font-mono text-xs">
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("monthly")}
-                  className={`px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer ${
-                    billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("annual")}
-                  className={`px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
-                    billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  <span>Annual</span>
-                  <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/30 text-emerald-300 font-normal">
-                    Save 20%
-                  </span>
-                </button>
-              </div>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
+                className="bg-black/60 border border-white/15 text-white text-xs font-mono rounded-lg px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                aria-label="Modal Currency"
+              >
+                {Object.values(CURRENCIES).map((c) => (
+                  <option key={c.code} value={c.code} className="bg-[#0d0f14] text-white">
+                    {c.flag} {c.code} ({c.symbol})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+            <div className="flex gap-1 font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle("annual")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                  billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <span>Annual</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/30 text-emerald-300 font-normal">
+                  -20%
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Payment Method Selector (3 Standard Industry Rails) */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
+              SELECT PAYMENT RAIL
+            </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
               <button
                 type="button"
                 onClick={() => setPaymentRail("card")}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   paymentRail === "card"
                     ? "bg-white text-black font-bold border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                     : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
                 }`}
               >
                 <CreditCard className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Cards / Apple Pay</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaymentRail("paystack")}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                  paymentRail === "paystack"
-                    ? "bg-emerald-500 text-black font-bold border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                    : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Paystack (ZAR)</span>
+                <span className="text-xs">Cards / Apple Pay</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentRail("crypto")}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   paymentRail === "crypto"
                     ? "bg-cyan-500 text-black font-bold border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                     : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Crypto Web3</span>
+                <span className="text-xs">Crypto Web3</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentRail("paypal")}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   paymentRail === "paypal"
                     ? "bg-blue-500 text-white font-bold border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span className="text-[10px]">PayPal</span>
+                <span className="text-xs">PayPal Express</span>
               </button>
             </div>
           </div>
@@ -307,7 +293,7 @@ export function PaywallModal() {
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-black font-mono text-white">
-                  {isZAR ? `R${finalPrice}` : `$${finalPrice}`}
+                  {formattedPrice}
                 </span>
                 <span className="text-xs font-mono text-zinc-400">
                   / {billingCycle === "annual" ? "year" : "month"}
@@ -319,9 +305,7 @@ export function PaywallModal() {
                 )}
               </div>
               <span className="text-[11px] font-mono text-emerald-400 block mt-1">
-                {isZAR
-                  ? "✓ Processed in South Africa (Cards, Capitec Pay, Instant EFT)"
-                  : "✓ Processed globally (Automated 7-Week Trial Tokenization)"}
+                ✓ 49-Day Full Access Trial • $0 Due Today
               </span>
             </div>
 
@@ -373,7 +357,7 @@ export function PaywallModal() {
               <>
                 <Zap className="w-4 h-4 fill-black" />
                 <span>
-                  START 7-WEEK FREE TRIAL ({isZAR ? `R${finalPrice}/mo` : `$${finalPrice}/mo`})
+                  START 7-WEEK FREE TRIAL ({formattedPrice}/mo)
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>
@@ -383,7 +367,7 @@ export function PaywallModal() {
           {/* Full Checkout Page Link */}
           <div className="text-center pt-1">
             <Link
-              href={`/checkout?plan=pro&billing=${billingCycle}`}
+              href={`/checkout?plan=pro&billing=${billingCycle}&currency=${currency}`}
               onClick={closePaywall}
               className="text-xs font-mono text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1"
             >

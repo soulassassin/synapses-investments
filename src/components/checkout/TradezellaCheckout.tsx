@@ -5,9 +5,17 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
+  CURRENCIES,
+  SupportedCurrency,
+  BASE_PLANS_USD,
+  convertUSD,
+  formatPrice,
+  getPlanPriceUSD,
+  detectCurrencyFromCountry,
+} from "@/lib/currency";
+import {
   ShieldCheck,
   CreditCard,
-  Building2,
   Globe,
   Zap,
   CheckCircle2,
@@ -15,7 +23,6 @@ import {
   ArrowRight,
   Sparkles,
   Tag,
-  HelpCircle,
   Clock,
   QrCode,
   Copy,
@@ -31,13 +38,21 @@ export function TradezellaCheckout() {
   const { user, profile, updateSubscription } = useAuth();
 
   // URL Query Parameters
-  const initialPlan = (searchParams.get("plan") as "basic" | "pro" | "syndicate") || "pro";
-  const initialBilling = (searchParams.get("billing") as "monthly" | "annual") || "monthly";
+  const paramPlan = searchParams.get("plan") as "basic" | "pro" | "syndicate" | null;
+  const paramBilling = searchParams.get("billing") as "monthly" | "annual" | null;
+  const paramCurrency = searchParams.get("currency") as SupportedCurrency | null;
 
   // Form States
-  const [selectedTier, setSelectedTier] = useState<"basic" | "pro" | "syndicate">(initialPlan);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(initialBilling);
-  const [paymentRail, setPaymentRail] = useState<"card" | "paystack" | "crypto" | "paypal">("card");
+  const [selectedTier, setSelectedTier] = useState<"basic" | "pro" | "syndicate">(
+    paramPlan && ["basic", "pro", "syndicate"].includes(paramPlan) ? paramPlan : "pro"
+  );
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    paramBilling && ["monthly", "annual"].includes(paramBilling) ? paramBilling : "monthly"
+  );
+  const [currency, setCurrency] = useState<SupportedCurrency>(
+    paramCurrency && CURRENCIES[paramCurrency] ? paramCurrency : "USD"
+  );
+  const [paymentRail, setPaymentRail] = useState<"card" | "crypto" | "paypal">("card");
   const [cryptoAsset, setCryptoAsset] = useState<"USDT_TRC20" | "USDT_ERC20" | "USDC" | "BTC">("USDT_TRC20");
 
   // User & Card Input States
@@ -64,51 +79,30 @@ export function TradezellaCheckout() {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  // Currency & Pricing Map
-  const pricing = {
-    basic: {
-      monthlyUSD: 19,
-      annualUSD: 15,
-      monthlyZAR: 349,
-      annualZAR: 269,
-      name: "Synapses Basic Journal",
-      isTrialEligible: false,
-    },
-    pro: {
-      monthlyUSD: 29,
-      annualUSD: 24,
-      monthlyZAR: 499,
-      annualZAR: 399,
-      name: "Synapses Institutional Pro (49-Day Trial)",
-      isTrialEligible: true,
-    },
-    syndicate: {
-      monthlyUSD: 99,
-      annualUSD: 79,
-      monthlyZAR: 1999,
-      annualZAR: 1599,
-      name: "Synapses Syndicate Desk",
-      isTrialEligible: false,
-    },
-  };
+  // Sync state if search params change
+  useEffect(() => {
+    if (paramPlan && ["basic", "pro", "syndicate"].includes(paramPlan)) {
+      setSelectedTier(paramPlan);
+    }
+    if (paramBilling && ["monthly", "annual"].includes(paramBilling)) {
+      setBillingCycle(paramBilling);
+    }
+    if (paramCurrency && CURRENCIES[paramCurrency]) {
+      setCurrency(paramCurrency);
+    }
+  }, [paramPlan, paramBilling, paramCurrency]);
 
-  const currentPlan = pricing[selectedTier];
-  const isZAR = country === "ZA" || paymentRail === "paystack";
-  const basePrice = isZAR
-    ? billingCycle === "monthly"
-      ? currentPlan.monthlyZAR
-      : currentPlan.annualZAR
-    : billingCycle === "monthly"
-    ? currentPlan.monthlyUSD
-    : currentPlan.annualUSD;
+  // Pricing calculations standardized on USD base
+  const basePriceUSD = getPlanPriceUSD(selectedTier, billingCycle);
+  const isFreeTrial = selectedTier === "pro";
 
-  const discountMultiplier = appliedPromo ? (100 - appliedPromo.discountPct) / 100 : 1.0;
-  const discountedRecurringPrice = Number((basePrice * discountMultiplier).toFixed(2));
-  const discountAmount = Number((basePrice - discountedRecurringPrice).toFixed(2));
+  const discountAmountUSD = appliedPromo
+    ? Number(((basePriceUSD * appliedPromo.discountPct) / 100).toFixed(2))
+    : 0;
+  const discountedRecurringUSD = Number((basePriceUSD - discountAmountUSD).toFixed(2));
 
-  // If Pro tier with 7-week trial, Total Due Today is $0.00!
-  const isFreeTrial = currentPlan.isTrialEligible;
-  const totalDueToday = isFreeTrial ? 0 : discountedRecurringPrice;
+  // During 7-week trial, Total Due Today is $0.00!
+  const totalDueTodayUSD = isFreeTrial ? 0 : discountedRecurringUSD;
 
   // Format Date 49 days from now for first billing
   const trialEndFormatted = new Date(Date.now() + 49 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
@@ -116,6 +110,14 @@ export function TradezellaCheckout() {
     day: "numeric",
     year: "numeric",
   });
+
+  const handleCountryChange = (newCountry: string) => {
+    setCountry(newCountry);
+    const autoDetectedCurrency = detectCurrencyFromCountry(newCountry);
+    if (autoDetectedCurrency) {
+      setCurrency(autoDetectedCurrency);
+    }
+  };
 
   const handleApplyPromo = async () => {
     if (!promoInput.trim()) return;
@@ -136,7 +138,7 @@ export function TradezellaCheckout() {
         setAppliedPromo(data.coupon);
         setPromoInput("");
       }
-    } catch (e: any) {
+    } catch {
       setPromoError("Failed to apply promo code.");
     } finally {
       setIsApplyingPromo(false);
@@ -148,27 +150,7 @@ export function TradezellaCheckout() {
     setCheckoutError(null);
 
     try {
-      if (paymentRail === "paystack") {
-        // Trigger Paystack Route
-        const res = await fetch("/api/checkout/paystack", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            userId: user?.id || profile?.id || "demo-trader-01",
-            plan: billingCycle,
-            returnUrl: `${window.location.origin}/dashboard?payment=success&provider=paystack`,
-          }),
-        });
-        const data = await res.json();
-        if (data.mode === "sandbox" || !data.authorization_url?.startsWith("http")) {
-          // Instant upgrade in sandbox/local
-          await updateSubscription("pro", "paystack", data.reference || "pstk_sub_01");
-          router.push("/dashboard?payment=success&provider=paystack");
-          return;
-        }
-        window.location.href = data.authorization_url;
-      } else if (paymentRail === "card") {
+      if (paymentRail === "card") {
         // Trigger Lemon Squeezy / Stripe
         const res = await fetch("/api/checkout/lemonsqueezy", {
           method: "POST",
@@ -188,12 +170,27 @@ export function TradezellaCheckout() {
         }
         window.location.href = data.checkout_url;
       } else if (paymentRail === "crypto") {
-        // Crypto instant activation simulation
-        await updateSubscription("pro", "lemonsqueezy", "crypto_verified_01");
-        router.push("/dashboard?payment=success&provider=crypto");
+        // Trigger Crypto Web3 Payment
+        const res = await fetch("/api/checkout/crypto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            userId: user?.id || profile?.id || "demo-trader-01",
+            asset: cryptoAsset,
+            amountUSD: totalDueTodayUSD > 0 ? totalDueTodayUSD : discountedRecurringUSD,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await updateSubscription("pro", "crypto", data.deposit.txId || "crypto_verified_01");
+          router.push("/dashboard?payment=success&provider=crypto");
+        } else {
+          throw new Error(data.error || "Failed to initialize crypto payment session.");
+        }
       } else {
-        // PayPal instant simulation
-        await updateSubscription("pro", "lemonsqueezy", "paypal_sub_01");
+        // PayPal instant subscription
+        await updateSubscription("pro", "paypal", "paypal_sub_01");
         router.push("/dashboard?payment=success&provider=paypal");
       }
     } catch (err: any) {
@@ -208,46 +205,64 @@ export function TradezellaCheckout() {
       <div className="lg:col-span-7 space-y-6">
         {/* Step 1: Plan Selection Container */}
         <div className="p-6 sm:p-7 rounded-3xl bg-[#0d0f14]/95 border border-white/10 shadow-[0_15px_45px_rgba(0,0,0,0.85)] space-y-5">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
             <span className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>1. SELECT TRADING SUITE PLAN</span>
+              <span>1. SELECT SUITE PLAN & CURRENCY</span>
             </span>
 
-            {/* Monthly / Annual Toggle */}
-            <div className="p-1 rounded-xl bg-black/60 border border-white/10 flex items-center gap-1 font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => setBillingCycle("monthly")}
-                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
-                  billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                type="button"
-                onClick={() => setBillingCycle("annual")}
-                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
-                  billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <span>Annual</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  Save 20%
-                </span>
-              </button>
+            {/* Currency Selector & Monthly/Annual Toggle */}
+            <div className="flex items-center gap-2">
+              {/* Geo Currency Dropdown */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 text-xs font-mono">
+                <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
+                  className="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer"
+                  aria-label="Select Currency"
+                >
+                  {Object.values(CURRENCIES).map((c) => (
+                    <option key={c.code} value={c.code} className="bg-[#0d0f14] text-white">
+                      {c.flag} {c.code} ({c.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Monthly / Annual Toggle */}
+              <div className="p-1 rounded-xl bg-black/60 border border-white/10 flex items-center gap-1 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                    billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("annual")}
+                  className={`px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                    billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  <span>Annual</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                    -20%
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Tier Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {(["basic", "pro", "syndicate"] as const).map((tierKey) => {
-              const item = pricing[tierKey];
+              const tierUSD = getPlanPriceUSD(tierKey, billingCycle);
               const isSelected = selectedTier === tierKey;
-              const priceDisplay = isZAR
-                ? billingCycle === "monthly" ? `R${item.monthlyZAR}` : `R${item.annualZAR}`
-                : billingCycle === "monthly" ? `$${item.monthlyUSD}` : `$${item.annualUSD}`;
+              const formattedPlanPrice = formatPrice(tierUSD, currency);
 
               return (
                 <div
@@ -260,8 +275,8 @@ export function TradezellaCheckout() {
                   }`}
                 >
                   {tierKey === "pro" && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-mono font-bold uppercase tracking-wider">
-                      7-Wk Free Trial
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-mono font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                      49-Day Free Trial
                     </span>
                   )}
                   <div>
@@ -269,12 +284,14 @@ export function TradezellaCheckout() {
                       {tierKey}
                     </span>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-2xl font-black font-mono text-white">{priceDisplay}</span>
+                      <span className="text-2xl font-black font-mono text-white">
+                        {formattedPlanPrice}
+                      </span>
                       <span className="text-[10px] font-mono text-zinc-400">/mo</span>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-400 mt-2 block">
-                    {item.isTrialEligible ? "✓ 49 Days Free ($0 Due)" : "Standard Access"}
+                    {tierKey === "pro" ? "✓ 49 Days Free ($0 Due)" : "Standard Access"}
                   </span>
                 </div>
               );
@@ -315,82 +332,67 @@ export function TradezellaCheckout() {
               <label className="text-[11px] font-mono text-zinc-400 block mb-1">COUNTRY / TAX RESIDENCY</label>
               <select
                 value={country}
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  if (e.target.value === "ZA") setPaymentRail("paystack");
-                }}
+                onChange={(e) => handleCountryChange(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
               >
                 <option value="US">United States (USD • Stripe & Cards)</option>
-                <option value="ZA">South Africa (ZAR • Paystack, Instant EFT & Cards)</option>
-                <option value="GB">United Kingdom (GBP / USD)</option>
-                <option value="EU">European Union (EUR / USD)</option>
-                <option value="CA">Canada (CAD / USD)</option>
-                <option value="AU">Australia (AUD / USD)</option>
+                <option value="GB">United Kingdom (GBP • Apple Pay & Cards)</option>
+                <option value="EU">European Union (EUR • SEPA & Cards)</option>
+                <option value="CA">Canada (CAD • Interac & Cards)</option>
+                <option value="AU">Australia (AUD • Cards)</option>
+                <option value="JP">Japan (JPY • Cards)</option>
+                <option value="ZA">South Africa (ZAR • Cards & EFT)</option>
                 <option value="GLOBAL">International / Other</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Step 3: Payment Method Selector */}
+        {/* Step 3: Payment Method Selector (Standard Global Rails) */}
         <div className="p-6 sm:p-7 rounded-3xl bg-[#0d0f14]/95 border border-white/10 space-y-5">
           <span className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider block border-b border-white/10 pb-2.5">
-            3. SELECT PAYMENT RAIL
+            3. SELECT GLOBAL PAYMENT RAIL
           </span>
 
           {/* Rail Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono text-xs">
             <button
               type="button"
               onClick={() => setPaymentRail("card")}
-              className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 paymentRail === "card"
                   ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.25)] border-white"
                   : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
               }`}
             >
               <CreditCard className="w-4 h-4" />
-              <span className="text-[11px]">Card / Apple Pay</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPaymentRail("paystack")}
-              className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                paymentRail === "paystack"
-                  ? "bg-emerald-500 text-black font-bold shadow-[0_0_15px_rgba(16,185,129,0.35)] border-emerald-500"
-                  : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span className="text-[11px]">Paystack (ZAR)</span>
+              <span className="text-xs">Card / Apple Pay / Google Pay</span>
             </button>
 
             <button
               type="button"
               onClick={() => setPaymentRail("crypto")}
-              className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 paymentRail === "crypto"
                   ? "bg-cyan-500 text-black font-bold shadow-[0_0_15px_rgba(6,182,212,0.35)] border-cyan-500"
                   : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
               }`}
             >
               <Zap className="w-4 h-4" />
-              <span className="text-[11px]">Crypto Web3</span>
+              <span className="text-xs">Crypto Web3 (USDT / BTC)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setPaymentRail("paypal")}
-              className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 paymentRail === "paypal"
                   ? "bg-blue-500 text-white font-bold shadow-[0_0_15px_rgba(59,130,246,0.35)] border-blue-500"
                   : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
               }`}
             >
               <Globe className="w-4 h-4" />
-              <span className="text-[11px]">PayPal</span>
+              <span className="text-xs">PayPal Express</span>
             </button>
           </div>
 
@@ -436,18 +438,6 @@ export function TradezellaCheckout() {
             </div>
           )}
 
-          {paymentRail === "paystack" && (
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono space-y-2 animate-in fade-in duration-200">
-              <span className="font-bold text-emerald-400 block flex items-center gap-1.5">
-                <Building2 className="w-4 h-4" />
-                <span>SOUTH AFRICA LOCAL PAYMENT GATEWAY (PAYSTACK)</span>
-              </span>
-              <p className="text-zinc-300 text-[11px] font-sans">
-                Supports all South African banks (Capitec, FNB, Standard Bank, Nedbank, ABSA), Instant EFT, Ozow, and debit/credit cards in ZAR.
-              </p>
-            </div>
-          )}
-
           {paymentRail === "crypto" && (
             <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-4 animate-in fade-in duration-200">
               <div className="flex items-center justify-between text-xs font-mono">
@@ -485,7 +475,7 @@ export function TradezellaCheckout() {
                         setCopiedAddress(true);
                         setTimeout(() => setCopiedAddress(false), 2000);
                       }}
-                      className="text-zinc-400 hover:text-white shrink-0 ml-2"
+                      className="text-zinc-400 hover:text-white shrink-0 ml-2 cursor-pointer"
                     >
                       {copiedAddress ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
@@ -505,7 +495,7 @@ export function TradezellaCheckout() {
                 <span>PAYPAL EXPRESS ONE-CLICK CHECKOUT</span>
               </span>
               <p className="text-zinc-300 text-[11px] font-sans">
-                You will be redirected securely to PayPal to confirm your subscription. Cancel anytime.
+                You will be redirected securely to PayPal to confirm your subscription in {currency}. Cancel anytime.
               </p>
             </div>
           )}
@@ -528,7 +518,7 @@ export function TradezellaCheckout() {
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-sm font-black font-mono text-white uppercase">
-                {currentPlan.name}
+                {BASE_PLANS_USD[selectedTier]?.name || selectedTier}
               </span>
               <span className="text-xs font-mono text-zinc-400 capitalize">
                 {billingCycle}
@@ -577,40 +567,42 @@ export function TradezellaCheckout() {
           <div className="space-y-2.5 font-mono text-xs pt-2 border-t border-white/10">
             <div className="flex justify-between text-zinc-400">
               <span>Standard Price:</span>
-              <span>{isZAR ? `R${basePrice}` : `$${basePrice}`}</span>
+              <span>{formatPrice(basePriceUSD, currency)}</span>
             </div>
 
             {appliedPromo && (
               <div className="flex justify-between text-emerald-400 font-bold">
                 <span>Promo Discount ({appliedPromo.discountPct}%):</span>
-                <span>-{isZAR ? `R${discountAmount}` : `$${discountAmount}`}</span>
+                <span>-{formatPrice(discountAmountUSD, currency)}</span>
               </div>
             )}
 
             {isFreeTrial && (
               <div className="flex justify-between text-emerald-400 font-bold">
                 <span>7-Week Free Trial Credit:</span>
-                <span>-{isZAR ? `R${discountedRecurringPrice}` : `$${discountedRecurringPrice}`}</span>
+                <span>-{formatPrice(discountedRecurringUSD, currency)}</span>
               </div>
             )}
 
             <div className="flex justify-between text-zinc-400">
               <span>Estimated Tax / VAT:</span>
-              <span>$0.00</span>
+              <span>{CURRENCIES[currency]?.symbol || "$"}0.00</span>
             </div>
 
             {/* Total Due Today */}
             <div className="flex justify-between items-baseline pt-3 border-t border-white/15 text-sm">
               <span className="text-white font-bold uppercase font-mono">TOTAL DUE TODAY:</span>
               <span className="text-2xl font-black font-mono text-emerald-400">
-                {totalDueToday === 0 ? "$0.00" : isZAR ? `R${totalDueToday}` : `$${totalDueToday}`}
+                {totalDueTodayUSD === 0
+                  ? `${CURRENCIES[currency]?.symbol || "$"}0.00`
+                  : formatPrice(totalDueTodayUSD, currency)}
               </span>
             </div>
 
             {isFreeTrial && (
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300 font-sans leading-relaxed">
                 ✓ <strong>49-Day Full Access Trial:</strong> You will not be charged today. Your first billing of{" "}
-                <strong>{isZAR ? `R${discountedRecurringPrice}` : `$${discountedRecurringPrice}`}</strong> will occur on{" "}
+                <strong>{formatPrice(discountedRecurringUSD, currency)}</strong> will occur on{" "}
                 <strong>{trialEndFormatted}</strong>. Cancel anytime with 1 click in your billing dashboard.
               </div>
             )}

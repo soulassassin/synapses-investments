@@ -233,7 +233,7 @@ export interface PlaybookStrategy {
 
 export type SubscriptionTier = "demo" | "trial" | "pro" | "canceled";
 
-export type PaymentProvider = "lemonsqueezy" | "stripe" | "paystack";
+export type PaymentProvider = "lemonsqueezy" | "stripe" | "crypto" | "paypal" | "paystack";
 
 export interface SubscriptionStatus {
   tier: SubscriptionTier;

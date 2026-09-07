@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
         amount: 29.0,
         currency: "USD",
         status: "Paid",
-        paymentMethod: "Paystack (Instant EFT / ZAR R499)",
+        paymentMethod: "Apple Pay (USD $29.00)",
         receiptUrl: "/api/billing/invoice/INV-2026-0012",
         pdfAvailable: true,
       },
