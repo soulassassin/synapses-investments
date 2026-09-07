@@ -64,7 +64,7 @@ export default function PricingPage() {
         "Priority 24/7 institutional desk support",
       ],
       ctaText: "Claim 7-Week Free Trial",
-      ctaHref: "/dashboard/journal",
+      ctaHref: `/checkout?plan=pro&billing=${billingCycle}`,
       highlighted: true,
     },
     {
@@ -82,8 +82,8 @@ export default function PricingPage() {
         "Custom API webhooks & webhook ingestion",
         "Dedicated institutional onboarding engineer",
       ],
-      ctaText: "Contact Desk",
-      ctaHref: "mailto:support@synapsesinvestments.com",
+      ctaText: "Get Syndicate Access",
+      ctaHref: `/checkout?plan=syndicate&billing=${billingCycle}`,
       highlighted: false,
     },
   ];

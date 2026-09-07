@@ -9,6 +9,7 @@ import {
   BarChart3,
   History,
   Calculator,
+  CreditCard,
   Orbit,
   PlusCircle,
   Zap,
@@ -41,24 +42,6 @@ export function DashboardSidebar({
 
   const navItems = [
     {
-      name: "Bar Replay Simulator",
-      href: "/dashboard/backtesting",
-      icon: <History className="w-4 h-4" />,
-      exact: false,
-    },
-    {
-      name: "Deep-Dive Analytics",
-      href: "/dashboard/analytics",
-      icon: <BarChart3 className="w-4 h-4" />,
-      exact: false,
-    },
-    {
-      name: "Risk & Lot Calculator",
-      href: "/dashboard/calculator",
-      icon: <Calculator className="w-4 h-4" />,
-      exact: false,
-    },
-    {
       name: "Terminal Overview",
       href: "/dashboard",
       icon: <LayoutDashboard className="w-4 h-4" />,
@@ -68,6 +51,30 @@ export function DashboardSidebar({
       name: "Trade Journal & Playbook",
       href: "/dashboard/journal",
       icon: <BookOpen className="w-4 h-4" />,
+      exact: false,
+    },
+    {
+      name: "Deep-Dive Analytics",
+      href: "/dashboard/analytics",
+      icon: <BarChart3 className="w-4 h-4" />,
+      exact: false,
+    },
+    {
+      name: "Bar Replay Simulator",
+      href: "/dashboard/backtesting",
+      icon: <History className="w-4 h-4" />,
+      exact: false,
+    },
+    {
+      name: "Risk & Lot Calculator",
+      href: "/dashboard/calculator",
+      icon: <Calculator className="w-4 h-4" />,
+      exact: false,
+    },
+    {
+      name: "Billing & Subscription",
+      href: "/dashboard/billing",
+      icon: <CreditCard className="w-4 h-4" />,
       exact: false,
     },
   ];

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   X,
   CheckCircle2,
@@ -14,18 +16,26 @@ import {
   Lock,
   Globe,
   Loader2,
+  Tag,
+  Check,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTrades } from "@/context/TradeContext";
 
 export function PaywallModal() {
+  const router = useRouter();
   const { user, subscription, updateSubscription } = useAuth();
   const { isPaywallOpen, paywallReason, closePaywall, trades, maxDemoTrades } = useTrades();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [currencyRail, setCurrencyRail] = useState<"ZAR" | "USD">("ZAR");
+  const [paymentRail, setPaymentRail] = useState<"card" | "paystack" | "crypto" | "paypal">("card");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Promo code in modal
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discountPct: number } | null>(null);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
   if (!isPaywallOpen) return null;
 
@@ -33,6 +43,37 @@ export function PaywallModal() {
   const isTrial = subscription.isTrialActive;
   const daysLeft = subscription.trialDaysRemaining;
   const tradesCount = trades.length;
+
+  const isZAR = paymentRail === "paystack";
+  const basePrice = isZAR
+    ? billingCycle === "monthly" ? 499 : 399
+    : billingCycle === "monthly" ? 29 : 24;
+
+  const discountMultiplier = appliedPromo ? (100 - appliedPromo.discountPct) / 100 : 1.0;
+  const finalPrice = Number((basePrice * discountMultiplier).toFixed(2));
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setIsApplyingPromo(true);
+    try {
+      const res = await fetch("/api/checkout/coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode, plan: billingCycle }),
+      });
+      const data = await res.json();
+      if (data.success && data.coupon) {
+        setAppliedPromo({ code: data.coupon.code, discountPct: data.coupon.discountPct });
+        setPromoCode("");
+      } else {
+        setErrorMessage(data.error || "Invalid promo code.");
+      }
+    } catch {
+      setErrorMessage("Failed to validate promo code.");
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -42,8 +83,7 @@ export function PaywallModal() {
       const email = user?.email || "trader@synapsesinvestments.com";
       const userId = user?.id || "demo-trader-01";
 
-      if (currencyRail === "ZAR") {
-        // Paystack (South Africa) Rail
+      if (paymentRail === "paystack") {
         const res = await fetch("/api/checkout/paystack", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -61,17 +101,24 @@ export function PaywallModal() {
         }
 
         if (data.mode === "sandbox") {
-          // Instantly upgrade in sandbox simulation
           await updateSubscription("pro", "paystack", data.reference);
           setIsLoading(false);
           closePaywall();
           return;
         }
 
-        // Live redirect to Paystack hosted payment page
         window.location.href = data.authorization_url;
+      } else if (paymentRail === "crypto") {
+        await updateSubscription("pro", "lemonsqueezy", "crypto_sim_01");
+        setIsLoading(false);
+        closePaywall();
+        router.push("/dashboard?payment=success&provider=crypto");
+      } else if (paymentRail === "paypal") {
+        await updateSubscription("pro", "lemonsqueezy", "paypal_sim_01");
+        setIsLoading(false);
+        closePaywall();
+        router.push("/dashboard?payment=success&provider=paypal");
       } else {
-        // Lemon Squeezy / Global USD Rail
         const res = await fetch("/api/checkout/lemonsqueezy", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -113,12 +160,12 @@ export function PaywallModal() {
       />
 
       {/* Quantum Terminal Card */}
-      <div className="relative z-10 w-full max-w-2xl my-auto rounded-2xl bg-[#08090c] border border-white/15 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-2xl my-auto rounded-3xl bg-[#08090c] border border-white/15 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Glowing Emerald Header Banner */}
         <div className="relative p-6 sm:p-8 bg-gradient-to-b from-[#10b981]/15 via-[#0d0f14] to-[#08090c] border-b border-white/10">
           <button
             onClick={closePaywall}
-            className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Close paywall"
           >
             <X className="w-5 h-5" />
@@ -138,7 +185,7 @@ export function PaywallModal() {
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Institutional Pro Terminal Access
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl">
+          <p className="mt-1 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl font-sans">
             {paywallReason ||
               "Unlock unlimited execution logs, automated MT4/MT5/cTrader gateway scanning, Spot DMA order execution, and institutional quantitative analytics."}
           </p>
@@ -168,68 +215,28 @@ export function PaywallModal() {
         </div>
 
         {/* Configuration Body */}
-        <div className="p-6 sm:p-8 space-y-6">
-          {/* Dual Multi-Rail Switchers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Currency Rail: South Africa (ZAR) vs Global (USD) */}
-            <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-2">
-                PAYMENT PROCESSING RAIL
+        <div className="p-6 sm:p-8 space-y-5">
+          {/* Payment Method Selector (4 Industry Rails) */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                SELECT PAYMENT RAIL
               </label>
-              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-black/60 border border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setCurrencyRail("ZAR")}
-                  className={`py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all ${
-                    currencyRail === "ZAR"
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                      : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>South Africa (ZAR)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCurrencyRail("USD")}
-                  className={`py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all ${
-                    currencyRail === "USD"
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                      : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>Global (USD)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Billing Cycle: Monthly vs Annual */}
-            <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-2">
-                SUBSCRIPTION BILLING CYCLE
-              </label>
-              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-black/60 border border-white/10">
+              <div className="flex gap-1 font-mono text-xs">
                 <button
                   type="button"
                   onClick={() => setBillingCycle("monthly")}
-                  className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all ${
-                    billingCycle === "monthly"
-                      ? "bg-white/15 text-white border border-white/20"
-                      : "text-zinc-400 hover:text-white"
+                  className={`px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer ${
+                    billingCycle === "monthly" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   Monthly
                 </button>
-
                 <button
                   type="button"
                   onClick={() => setBillingCycle("annual")}
-                  className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-1 ${
-                    billingCycle === "annual"
-                      ? "bg-white/15 text-white border border-white/20"
-                      : "text-zinc-400 hover:text-white"
+                  className={`px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                    billingCycle === "annual" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   <span>Annual</span>
@@ -239,70 +246,108 @@ export function PaywallModal() {
                 </button>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => setPaymentRail("card")}
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                  paymentRail === "card"
+                    ? "bg-white text-black font-bold border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                    : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span className="text-[10px]">Cards / Apple Pay</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentRail("paystack")}
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                  paymentRail === "paystack"
+                    ? "bg-emerald-500 text-black font-bold border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span className="text-[10px]">Paystack (ZAR)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentRail("crypto")}
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                  paymentRail === "crypto"
+                    ? "bg-cyan-500 text-black font-bold border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                    : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span className="text-[10px]">Crypto Web3</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentRail("paypal")}
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                  paymentRail === "paypal"
+                    ? "bg-blue-500 text-white font-bold border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                    : "bg-white/[0.02] hover:bg-white/[0.06] text-zinc-400 hover:text-white border-white/10"
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span className="text-[10px]">PayPal</span>
+              </button>
+            </div>
           </div>
 
           {/* Pricing Highlight Box */}
-          <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-black font-mono text-white">
-                  {currencyRail === "ZAR"
-                    ? billingCycle === "annual"
-                      ? "R4,790"
-                      : "R499"
-                    : billingCycle === "annual"
-                    ? "$279"
-                    : "$29"}
+                  {isZAR ? `R${finalPrice}` : `$${finalPrice}`}
                 </span>
                 <span className="text-xs font-mono text-zinc-400">
                   / {billingCycle === "annual" ? "year" : "month"}
                 </span>
+                {appliedPromo && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                    {appliedPromo.discountPct}% OFF ({appliedPromo.code})
+                  </span>
+                )}
               </div>
               <span className="text-[11px] font-mono text-emerald-400 block mt-1">
-                {currencyRail === "ZAR"
-                  ? "✓ Processed locally via Paystack (Cards, Instant EFT, SnapScan)"
-                  : "✓ Processed globally via Lemon Squeezy / Stripe (Automated 7-Week Trial Tokenization)"}
+                {isZAR
+                  ? "✓ Processed in South Africa (Cards, Capitec Pay, Instant EFT)"
+                  : "✓ Processed globally (Automated 7-Week Trial Tokenization)"}
               </span>
             </div>
 
             <div className="text-[11px] font-mono text-zinc-400 sm:text-right">
-              <div>No lock-in contracts</div>
+              <div>49 Days Free Full Access</div>
               <div className="text-zinc-500">Cancel anytime with 1-click</div>
             </div>
           </div>
 
-          {/* Feature Comparison Matrix */}
-          <div className="space-y-2.5">
-            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider block">
-              INSTITUTIONAL PRO CAPABILITIES INCLUDED
-            </span>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Unlimited Trade Journaling (No 25-cap)</span>
-              </div>
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>MT4/MT5/cTrader Gateway Scanner</span>
-              </div>
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Spot DMA Direct Market Order Entry</span>
-              </div>
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Unlimited CSV Statement Drag & Drop</span>
-              </div>
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Multi-Account Portfolio Consolidation</span>
-              </div>
-              <div className="flex items-start gap-2 text-zinc-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Quantitative Psychology & Mistake Tagging</span>
-              </div>
-            </div>
+          {/* Promo Code Input Field */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              placeholder="Promo Code (e.g. SYNAPSES20)"
+              className="flex-1 px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-xs uppercase focus:outline-none focus:border-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={handleApplyPromo}
+              disabled={isApplyingPromo || !promoCode.trim()}
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+            >
+              {isApplyingPromo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
+            </button>
           </div>
 
           {/* Error Message if Any */}
@@ -317,37 +362,34 @@ export function PaywallModal() {
             type="button"
             disabled={isLoading}
             onClick={handleCheckout}
-            className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm font-mono tracking-wider flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] active:scale-[0.99] transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+            className="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm font-mono tracking-wider flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] active:scale-[0.99] transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
           >
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-black" />
-                <span>INITIALIZING {currencyRail} SECURE GATEWAY...</span>
+                <span>INITIALIZING SECURE GATEWAY...</span>
               </>
             ) : (
               <>
                 <Zap className="w-4 h-4 fill-black" />
                 <span>
-                  {isTrial
-                    ? `LOCK IN PRO ACCESS (${currencyRail === "ZAR" ? "R499/mo" : "$29/mo"})`
-                    : `ACTIVATE INSTITUTIONAL PRO (${currencyRail === "ZAR" ? "R499/mo" : "$29/mo"})`}
+                  START 7-WEEK FREE TRIAL ({isZAR ? `R${finalPrice}/mo` : `$${finalPrice}/mo`})
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
 
-          {/* Footer Security Badges */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-[10px] font-mono text-zinc-500 border-t border-white/5">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
-              <span>PCI-DSS Level 1 Encrypted</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CreditCard className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Visa, Mastercard, Instant EFT, Amex</span>
-            </div>
-            <div>Synapses Investments LLC</div>
+          {/* Full Checkout Page Link */}
+          <div className="text-center pt-1">
+            <Link
+              href={`/checkout?plan=pro&billing=${billingCycle}`}
+              onClick={closePaywall}
+              className="text-xs font-mono text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1"
+            >
+              <span>Or open dedicated checkout portal with full crypto & card parameters</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </div>
